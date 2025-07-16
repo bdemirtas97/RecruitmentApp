@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Recruitment Portal</title>
+</head>
+<body>
+<h1>Welcome to the Recruitment Portal</h1>
+<p>Please select your portal to continue.</p>
+<hr>
+<div>
+    <h2>For Candidates</h2>
+    <p>Login or create an account to manage your profile and apply for jobs.</p>
+    <a th:href="@{/login/candidate}"><button>Candidate Login</button></a>
+    <a th:href="@{/signup/candidate}"><button>Candidate Signup</button></a>
+</div>
+<hr>
+<div>
+    <h2>For Company Employees</h2>
+    <p>Login as a Recruiter or Hiring Manager to manage job postings and candidates.</p>
+    <a th:href="@{/login/employee}"><button>Employee Login</button></a>
+</div>
+</body>
+</html>

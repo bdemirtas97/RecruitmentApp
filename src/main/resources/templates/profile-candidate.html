@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Profile</title>
+</head>
+<body>
+<h1>Candidate Profile</h1>
+<div th:if="${param.updateSuccess}" style="color:green;">Profile updated successfully!</div>
+
+<form th:action="@{/candidate/profile}" th:object="${profileUpdate}" method="post" enctype="multipart/form-data">
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+  <h3>Your Details</h3>
+  <div>
+    <label for="firstName">First Name:</label>
+    <input type="text" id="firstName" th:field="*{firstName}" required />
+    <p th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}" style="color:red;"></p>
+  </div>
+  <div>
+    <label for="lastName">Last Name:</label>
+    <input type="text" id="lastName" th:field="*{lastName}" required />
+    <p th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}" style="color:red;"></p>
+  </div>
+  <div>
+    <label for="contactEmail">Contact Email:</label>
+    <input type="email" id="contactEmail" th:field="*{contactEmail}" required />
+    <p th:if="${#fields.hasErrors('contactEmail')}" th:errors="*{contactEmail}" style="color:red;"></p>
+  </div>
+  <div>
+    <label for="contactPhone">Contact Phone:</label>
+    <input type="tel" id="contactPhone" th:field="*{contactPhone}" />
+    <p th:if="${#fields.hasErrors('contactPhone')}" th:errors="*{contactPhone}" style="color:red;"></p>
+  </div>
+  <div>
+    <label for="resumeFile">Upload New Resume (PDF):</label>
+    <input type="file" id="resumeFile" name="resumeFile" accept=".pdf" />
+  </div>
+  <div>
+    <button type="submit">Update Profile</button>
+  </div>
+</form>
+
+<hr>
+
+<form th:action="@{/logout}" method="post">
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+  <button type="submit">Sign Out</button>
+</form>
+</body>
+</html>

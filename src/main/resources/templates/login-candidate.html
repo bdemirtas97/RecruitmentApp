@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Candidate Login</title>
+</head>
+<body>
+<h1>Candidate Portal Login</h1>
+
+<div th:if="${param.error}" style="color: red;">
+  Invalid email or password.
+</div>
+<div th:if="${param.logout}" style="color: green;">
+  You have been logged out successfully.
+</div>
+<div th:if="${param.signupSuccess}" style="color: green;">
+  Signup successful! Please log in to continue.
+</div>
+
+<form th:action="@{/login/candidate}" method="post">
+  <div>
+    <label for="username">Email:</label>
+    <input type="text" id="username" name="username" required autofocus />
+  </div>
+  <div>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required />
+  </div>
+  <div>
+    <button type="submit">Sign In</button>
+  </div>
+</form>
+<p>
+  Don't have an account? <a th:href="@{/signup/candidate}">Sign up here</a>.
+</p>
+</body>
+</html>
