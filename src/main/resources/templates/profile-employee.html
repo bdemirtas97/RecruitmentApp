@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: common_head(pageTitle='Employee Profile')}"></head>
+<body class="portal-page">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="header">
+        <h1>Employee Profile</h1>
+    </div>
+    <div class="card">
+        <h3>Your Information</h3>
+        <hr>
+        <div style="line-height: 1.8;">
+            <strong>Email:</strong> <span th:text="${employeeDetails.email}"></span><br/>
+            <strong>First Name:</strong> <span th:text="${employeeDetails.firstName}"></span><br/>
+            <strong>Last Name:</strong> <span th:text="${employeeDetails.lastName}"></span><br/>
+            <strong>Role:</strong> <span th:text="${employeeDetails.role}"></span><br/>
+        </div>
+        <hr>
+        <p><a th:href="@{/postings}" class="button">Manage Postings</a></p>
+    </div>
+</div>
+
+</body>
+</html>

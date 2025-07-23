@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: common_head(pageTitle='My Applications')}"></head>
+
+<body class="portal-page">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="header">
+        <h1>My Job Applications</h1>
+    </div>
+    <div class="card">
+        <div th:if="${param.success}" class="success-message">
+            Your application was submitted successfully!
+        </div>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+            <tr style="text-align: left; border-bottom: 2px solid #dee2e6;">
+                <th style="padding: 0.75rem;">Job Title</th>
+                <th style="padding: 0.75rem;">Date Applied</th>
+                <th style="padding: 0.75rem;">Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${applications.isEmpty()}">
+                <td colspan="3" style="padding: 1rem; text-align: center;">
+                    You have not submitted any applications yet.
+                </td>
+            </tr>
+            <tr th:each="app : ${applications}" style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 0.75rem;" th:text="${app.postingTitle}">Senior Java Developer</td>
+                <td style="padding: 0.75rem;" th:text="${app.applicationDate}">22 July 2025</td>
+                <td style="padding: 0.75rem;" th:text="${app.status}">APPLIED</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

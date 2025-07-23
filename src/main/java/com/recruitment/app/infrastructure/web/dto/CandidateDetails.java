@@ -10,6 +10,7 @@ public class CandidateDetails {
     String lastName;
     String contactEmail;
     String contactPhone;
+    String resumeUrl;
 
     public static CandidateDetails fromDomain(Candidate candidate) {
         return new CandidateDetails(
@@ -17,7 +18,8 @@ public class CandidateDetails {
                 candidate.getFirstName(),
                 candidate.getLastName(),
                 candidate.getContactEmail(),
-                candidate.getContactPhone()
+                candidate.getContactPhone(),
+                candidate.getFileUrl()
         );
     }
 }

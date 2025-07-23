@@ -1,13 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <title>Page Not Found</title>
-</head>
-<body>
-<h1>404 - Page Not Found</h1>
-<p>The page you are looking for does not exist.</p>
-<p th:if="${errorMessage}" th:text="${errorMessage}"></p>
-<a th:href="@{/}">Return to Home Page</a>
+<head th:replace="~{fragments/head :: common_head(pageTitle='Employee Login')}"></head>
+<body class="public-page">
+<div class="public-container" style="max-width: 400px;">
+  <div class="card">
+    <h1>Employee Login</h1>
+    <div th:if="${param.error}" class="error-message">Invalid email or password.</div>
+    <div th:if="${param.signupSuccess}" class="success-message">Signup successful! Please log in.</div>
+    <form th:action="@{/login/employee}" method="post">
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <div>
+        <label for="username">Work Email:</label>
+        <input type="text" id="username" name="username" autofocus required />
+      </div>
+      <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required />
+      </div>
+      <div><button type="submit">Sign In</button></div>
+    </form>
+    <p style="margin-top: 1rem;">Don't have an employee account? <a th:href="@{/signup/employee}">Create one here</a>.</p>
+  </div>
+</div>
 </body>
 </html>

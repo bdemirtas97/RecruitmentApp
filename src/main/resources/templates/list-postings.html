@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: common_head(pageTitle='Manage Job Postings')}"></head>
+<body class="portal-page">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="header">
+        <h1>Manage Job Postings</h1>
+    </div>
+    <div class="card">
+        <div th:if="${param.creationSuccess}" class="success-message">New posting created successfully.</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h2>Your Job Postings</h2>
+            <a th:href="@{/postings/new}" class="button">Create New Posting</a>
+        </div>
+        <hr>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+            <tr style="text-align: left; border-bottom: 2px solid #dee2e6;">
+                <th style="padding: 0.75rem;">Title</th>
+                <th style="padding: 0.75rem;">Status</th>
+                <th style="padding: 0.75rem;">Hiring Manager</th>
+                <th style="padding: 0.75rem;">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${postings.isEmpty()}">
+                <td colspan="4" style="padding: 1rem; text-align: center;">You have not created any postings yet.</td>
+            </tr>
+            <tr th:each="posting : ${postings}" style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 0.75rem;" th:text="${posting.title}">Senior Java Developer</td>
+                <td style="padding: 0.75rem;" th:text="${posting.status}">DRAFT</td>
+                <td style="padding: 0.75rem;" th:text="${posting.hiringManagerName}">Jane Doe</td>
+                <td style="padding: 0.75rem;">
+                    <a th:href="@{/postings/{id}(id=${posting.id})}">View/Edit</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

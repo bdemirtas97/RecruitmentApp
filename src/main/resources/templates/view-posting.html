@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: common_head(pageTitle=${posting.title})}"></head>
+<body class="portal-page">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="header">
+        <h1 th:text="${posting.title}">Job Details</h1>
+    </div>
+    <div class="card">
+        <div th:if="${applySuccess}" class="success-message" th:text="${applySuccess}"></div>
+        <div th:if="${applyError}" class="error-message" th:text="${applyError}"></div>
+
+        <h2 th:text="${posting.title}">Job Title</h2>
+        <p>
+            <strong>Location:</strong> <span th:text="${posting.location}"></span> |
+            <strong>Level:</strong> <span th:text="${posting.level}"></span> |
+            <strong>Type:</strong> <span th:text="${posting.workingType} + ' (' + ${posting.workPlace} + ')'"></span>
+        </p>
+        <hr>
+        <div style="white-space: pre-wrap;" th:text="${posting.details}">
+            Job Description...
+        </div>
+        <hr>
+
+        <h3>Apply Now</h3>
+        <form th:action="@{/candidate/postings/{id}/apply(id=${id})}" th:object="${applicationRequest}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div>
+                <label for="coverLetterText">Cover Letter (Optional):</label>
+                <textarea id="coverLetterText" th:field="*{coverLetterText}" rows="8"></textarea>
+                <p th:if="${#fields.hasErrors('coverLetterText')}" th:errors="*{coverLetterText}" class="error-text"></p>
+            </div>
+            <div>
+                <button type="submit">Submit Application</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

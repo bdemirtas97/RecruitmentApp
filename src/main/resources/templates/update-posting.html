@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: common_head(pageTitle='Update Job Posting')}"></head>
+<body class="portal-page">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="header">
+        <h1 th:text="'Update: ' + ${postingUpdateRequest.title}">Update Job Posting</h1>
+    </div>
+    <div class="card">
+        <div th:if="${param.updateSuccess}" class="success-message">Posting updated successfully.</div>
+        <form th:action="@{/postings/{id}(id=${postingId})}" th:object="${postingUpdateRequest}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div th:if="${#fields.hasGlobalErrors()}"><p th:each="err : ${#fields.globalErrors()}" th:text="${err}" class="error-message"></p></div>
+
+            <div>
+                <label for="title">Job Title:</label>
+                <input type="text" id="title" th:field="*{title}" required />
+                <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="error-text"></p>
+            </div>
+            <div>
+                <label for="details">Job Details:</label>
+                <textarea id="details" th:field="*{details}" rows="10"></textarea>
+                <p th:if="${#fields.hasErrors('details')}" th:errors="*{details}" class="error-text"></p>
+            </div>
+            <div>
+                <label for="keywords">Keywords:</label>
+                <input type="text" id="keywords" th:field="*{keywords}" />
+            </div>
+            <div>
+                <label for="status">Status:</label>
+                <select id="status" th:field="*{status}" required>
+                    <option value="ACTIVE">Active</option>
+                    <option value="CLOSED">Closed</option>
+                </select>
+                <p th:if="${#fields.hasErrors('status')}" th:errors="*{status}" class="error-text"></p>
+            </div>
+            <hr>
+            <div>
+                <button type="submit">Update Posting</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

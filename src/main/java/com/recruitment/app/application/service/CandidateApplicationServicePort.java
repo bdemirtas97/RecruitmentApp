@@ -2,7 +2,7 @@ package com.recruitment.app.application.service;
 
 import com.recruitment.app.domain.model.Candidate;
 import com.recruitment.app.domain.port.in.CandidateUseCasePort;
-import com.recruitment.app.domain.port.out.CandidateStoragePort;
+import com.recruitment.app.domain.port.out.CandidateDataPort;
 import com.recruitment.app.domain.port.out.FileStoragePort;
 import com.recruitment.app.infrastructure.web.dto.CandidateDetails;
 import com.recruitment.app.infrastructure.web.dto.CandidateProfileUpdate;
@@ -20,16 +20,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CandidateApplicationServicePort implements CandidateUseCasePort {
 
-    private final CandidateStoragePort candidateStoragePort;
+    private final CandidateDataPort candidateDataPort;
     private final PasswordEncoder passwordEncoder;
     private final FileStoragePort fileStoragePort;
 
     @Override
     @Transactional
     public void signup(CandidateSignupRequest request) {
-        if (candidateStoragePort.existsByEmail(request.getEmail())) {
+        if (candidateDataPort.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("A candidate with this email already exists.");
         }
+
         String hashedPassword = passwordEncoder.encode(request.getPassword());
         Candidate candidate = Candidate.builder()
                 .id(UUID.randomUUID())
@@ -39,13 +40,14 @@ public class CandidateApplicationServicePort implements CandidateUseCasePort {
                 .lastName(request.getLastName())
                 .role("CANDIDATE")
                 .build();
-        candidateStoragePort.add(candidate);
+
+        candidateDataPort.addCandidate(candidate);
     }
 
     @Override
     @Transactional
     public void updateProfile(String email, CandidateProfileUpdate request, InputStream fileStream, String originalFileName) throws IOException {
-        Candidate candidate = candidateStoragePort.findByEmail(email)
+        Candidate candidate = candidateDataPort.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + email));
         String fileUrl = null;
         if(fileStream != null){
@@ -53,17 +55,17 @@ public class CandidateApplicationServicePort implements CandidateUseCasePort {
             fileUrl = fileStoragePort.addResume(fileName, fileStream);
 
         }
-        candidate.updateProfile(request.getFirstName(), request.getLastName(), request.getContactEmail(), request.getContactPhone());
+        candidate.updateProfile(request);
         if(fileUrl != null){
             candidate.updateResumeUrl(fileUrl);
         }
-        candidateStoragePort.add(candidate);
+        candidateDataPort.addCandidate(candidate);
     }
 
     @Override
     @Transactional(readOnly = true)
     public CandidateDetails getDetailsByEmail(String email) {
-        return candidateStoragePort.findByEmail(email)
+        return candidateDataPort.findByEmail(email)
                 .map(CandidateDetails::fromDomain)
                 .orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + email));
     }

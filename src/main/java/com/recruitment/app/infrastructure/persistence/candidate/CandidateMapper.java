@@ -3,9 +3,8 @@ package com.recruitment.app.infrastructure.persistence.candidate;
 import com.recruitment.app.domain.model.Candidate;
 import org.springframework.stereotype.Component;
 
-@Component
 public class CandidateMapper {
-    public CandidateJpaEntity toJpaEntity(Candidate domain) {
+    public static CandidateJpaEntity toJpaEntity(Candidate domain) {
         CandidateJpaEntity entity = new CandidateJpaEntity();
         entity.setId(domain.getId());
         entity.setEmail(domain.getEmail());
@@ -19,7 +18,7 @@ public class CandidateMapper {
         return entity;
     }
 
-    public Candidate toDomain(CandidateJpaEntity entity) {
+    public static Candidate toDomain(CandidateJpaEntity entity) {
         return Candidate.builder()
                 .id(entity.getId())
                 .email(entity.getEmail())

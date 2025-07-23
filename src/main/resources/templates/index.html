@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Recruitment Portal</title>
-</head>
-<body>
-<h1>Welcome to the Recruitment Portal</h1>
-<p>Please select your portal to continue.</p>
-<hr>
-<div>
-    <h2>For Candidates</h2>
-    <p>Login or create an account to manage your profile and apply for jobs.</p>
-    <a th:href="@{/login/candidate}"><button>Candidate Login</button></a>
-    <a th:href="@{/signup/candidate}"><button>Candidate Signup</button></a>
-</div>
-<hr>
-<div>
-    <h2>For Company Employees</h2>
-    <p>Login as a Recruiter or Hiring Manager to manage job postings and candidates.</p>
-    <a th:href="@{/login/employee}"><button>Employee Login</button></a>
+<head th:replace="~{fragments/head :: common_head(pageTitle='Welcome - Recruitment Portal')}"></head>
+<body class="public-page">
+<div class="public-container">
+    <h1>Recruitment Portal</h1>
+    <div class="card">
+        <h2>Please select your portal to continue.</h2>
+        <hr>
+        <div style="text-align: center;">
+            <h3>For Candidates</h3>
+            <p>Login or create an account to manage your profile and apply for jobs.</p>
+            <a th:href="@{/login/candidate}" class="button">Candidate Login</a>
+            <a th:href="@{/signup/candidate}" class="button">Candidate Signup</a>
+        </div>
+        <hr>
+        <div style="text-align: center; margin-top: 2rem;">
+            <h3>For Employees</h3>
+            <p>Login as a Recruiter or Hiring Manager.</p>
+            <a th:href="@{/login/employee}" class="button">Employee Login</a>
+            <a th:href="@{/signup/employee}" class="button">Employee Signup</a>
+        </div>
+    </div>
 </div>
 </body>
 </html>

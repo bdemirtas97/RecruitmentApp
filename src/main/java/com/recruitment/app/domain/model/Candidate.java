@@ -1,10 +1,11 @@
 package com.recruitment.app.domain.model;
 
+import com.recruitment.app.infrastructure.web.dto.CandidateProfileUpdate;
 import lombok.*;
 import java.util.UUID;
 
 @Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Builder
 public class Candidate {
     private final UUID id;
@@ -17,11 +18,11 @@ public class Candidate {
     private String contactPhone;
     private String fileUrl;
 
-    public void updateProfile(String firstName, String lastName, String contactEmail, String contactPhone) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.contactEmail = contactEmail;
-        this.contactPhone = contactPhone;
+    public void updateProfile(CandidateProfileUpdate request) {
+        this.firstName = request.getFirstName();
+        this.lastName = request.getLastName();
+        this.contactEmail = request.getContactEmail();
+        this.contactPhone = request.getContactPhone();
     }
 
     public void updateResumeUrl(String newUrl){

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{fragments/head :: common_head(pageTitle='Active Job Postings')}"></head>
+
+<body class="portal-page">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="main-content">
+    <div class="header">
+        <h1>Active Job Postings</h1>
+    </div>
+
+    <div th:if="${postings.isEmpty()}">
+        <div class="card">
+            <p>There are currently no active job postings. Please check back later!</p>
+        </div>
+    </div>
+
+    <div th:if="${!postings.isEmpty()}">
+        <div th:each="posting : ${postings}" class="card" style="margin-bottom: 1rem;">
+            <h3 style="margin-top: 0; margin-bottom: 0.5rem;">
+                <a th:href="@{postings/{id}(id=${posting.id})}" th:text="${posting.title}">
+                    Senior Java Developer
+                </a>
+            </h3>
+            <p style="margin: 0; color: #6c757d;">
+                <span th:text="${posting.location}">Location</span>
+                <span>&bull;</span>
+                <span th:text="${posting.workingType}">Full-time</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
