@@ -15,8 +15,6 @@ interface SpringDataEmployeeRepository extends JpaRepository<EmployeeJpaEntity, 
     Optional<EmployeeJpaEntity> findByEmail(String email);
     boolean existsByEmail(String email);
     List<EmployeeJpaEntity> findAllByRole(String role);
-    @Nonnull
-    Optional<EmployeeJpaEntity> findById(@Nonnull UUID id);
 }
 
 @Repository

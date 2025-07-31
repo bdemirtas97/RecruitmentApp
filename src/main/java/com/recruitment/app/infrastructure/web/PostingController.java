@@ -1,19 +1,16 @@
 package com.recruitment.app.infrastructure.web;
 
 import com.recruitment.app.domain.model.Posting;
+import com.recruitment.app.domain.port.in.ApplicationUseCasePort;
 import com.recruitment.app.domain.port.in.EmployeeUseCasePort;
 import com.recruitment.app.domain.port.in.PostingUseCasePort;
-import com.recruitment.app.infrastructure.web.dto.HiringManagerDto;
-import com.recruitment.app.infrastructure.web.dto.PostingCreationRequest;
-import com.recruitment.app.infrastructure.web.dto.PostingSummary;
-import com.recruitment.app.infrastructure.web.dto.PostingUpdate;
+import com.recruitment.app.infrastructure.web.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
 import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
@@ -26,6 +23,7 @@ public class PostingController {
 
     private final PostingUseCasePort postingUseCasePort;
     private final EmployeeUseCasePort employeeUseCasePort;
+    private final ApplicationUseCasePort applicationUseCasePort;
 
     @GetMapping
     public String showPostingsList(Model model, Principal principal) {
@@ -71,12 +69,18 @@ public class PostingController {
     public String showUpdatePostingForm(@PathVariable UUID id, Model model) {
         Posting posting = postingUseCasePort.getPostingById(id);
 
+        List<ApplicationDetailsDto> applications = applicationUseCasePort.findApplicationsForPosting(id)
+                .stream()
+                .map(ApplicationDetailsDto::fromDomain)
+                .toList();
+
         List<HiringManagerDto> hiringManagers = employeeUseCasePort.findHiringManagers().stream()
                 .map(HiringManagerDto::fromDomain)
                 .collect(Collectors.toList());
 
         model.addAttribute("postingUpdateRequest", PostingUpdate.fromDomain(posting));
         model.addAttribute("hiringManagers", hiringManagers);
+        model.addAttribute("applications", applications);
         model.addAttribute("postingId", id);
 
         return "update-posting";
@@ -93,6 +97,9 @@ public class PostingController {
                     .map(HiringManagerDto::fromDomain)
                     .collect(Collectors.toList());
             model.addAttribute("hiringManagers", hiringManagers);
+            List<ApplicationDetailsDto> applications = applicationUseCasePort.findApplicationsForPosting(id).stream().map(
+                    ApplicationDetailsDto::fromDomain).toList();
+            model.addAttribute("applications", applications);
             model.addAttribute("postingId", id);
             return "update-posting";
         }

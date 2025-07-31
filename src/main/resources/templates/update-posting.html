@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{fragments/head :: common_head(pageTitle='Update Job Posting')}"></head>
+
 <body class="portal-page">
 
 <div th:replace="~{fragments/sidebar :: sidebar}"></div>
@@ -9,6 +11,7 @@
     <div class="header">
         <h1 th:text="'Update: ' + ${postingUpdateRequest.title}">Update Job Posting</h1>
     </div>
+
     <div class="card">
         <div th:if="${param.updateSuccess}" class="success-message">Posting updated successfully.</div>
         <form th:action="@{/postings/{id}(id=${postingId})}" th:object="${postingUpdateRequest}" method="post">
@@ -19,6 +22,26 @@
                 <label for="title">Job Title:</label>
                 <input type="text" id="title" th:field="*{title}" required />
                 <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="error-text"></p>
+            </div>
+            <div>
+                <label for="location">Location:</label>
+                <input type="text" id="location" th:field="*{location}" required />
+                <p th:if="${#fields.hasErrors('location')}" th:errors="*{location}" class="error-text"></p>
+            </div>
+            <div>
+                <label for="level">Level:</label>
+                <input type="text" id="level" th:field="*{level}" required />
+                <p th:if="${#fields.hasErrors('level')}" th:errors="*{level}" class="error-text"></p>
+            </div>
+            <div>
+                <label for="workingType">Working Type:</label>
+                <input type="text" id="workingType" th:field="*{workingType}" required />
+                <p th:if="${#fields.hasErrors('workingType')}" th:errors="*{workingType}" class="error-text"></p>
+            </div>
+            <div>
+                <label for="workPlace">Work Place:</label>
+                <input type="text" id="workPlace" th:field="*{workPlace}" required />
+                <p th:if="${#fields.hasErrors('workPlace')}" th:errors="*{workPlace}" class="error-text"></p>
             </div>
             <div>
                 <label for="details">Job Details:</label>
@@ -42,6 +65,39 @@
                 <button type="submit">Update Posting</button>
             </div>
         </form>
+    </div>
+
+    <div class="card" style="margin-top: 2rem;">
+        <h2>Applications Received</h2>
+        <hr>
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+            <tr style="text-align: left; border-bottom: 2px solid #dee2e6;">
+                <th style="padding: 0.75rem;">Candidate Name</th>
+                <th style="padding: 0.75rem;">Contact Email</th>
+                <th style="padding: 0.75rem;">Date Applied</th>
+                <th style="padding: 0.75rem;">Score</th>
+                <th style="padding: 0.75rem;">Resume</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${applications.isEmpty()}">
+                <td colspan="4" style="padding: 1rem; text-align: center;">
+                    There are no applications for this posting yet.
+                </td>
+            </tr>
+            <tr th:each="app : ${applications}" style="border-bottom: 1px solid #dee2e6;">
+                <td style="padding: 0.75rem;" th:text="${app.candidateFullName}">John Doe</td>
+                <td style="padding: 0.75rem;" th:text="${app.candidateEmail}">x@y.com</td>
+                <td style="padding: 0.75rem;" th:text="${app.applicationDate}">22 July 2025</td>
+                <td style="padding: 0.75rem;" th:text="${app.score}">22 July 2025</td>
+                <td style="padding: 0.75rem;">
+                    <a th:if="${app.resumeUrl != null}" th:href="${app.resumeUrl}" target="_blank" class="button">View Resume</a>
+                    <span th:if="${app.resumeUrl == null}">No Resume</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 

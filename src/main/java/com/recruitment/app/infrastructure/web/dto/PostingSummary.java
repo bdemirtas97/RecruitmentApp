@@ -2,7 +2,6 @@ package com.recruitment.app.infrastructure.web.dto;
 
 import com.recruitment.app.domain.model.Posting;
 import lombok.Value;
-
 import java.util.UUID;
 
 @Value

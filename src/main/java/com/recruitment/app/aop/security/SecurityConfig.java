@@ -76,7 +76,7 @@ public class SecurityConfig {
     public SecurityFilterChain defaultFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/signup/**", "/error/**", "/favicon.ico", "/css/**").permitAll()
+                        .requestMatchers("/", "/signup/**", "/error/**", "/favicon.ico", "/css/**", "/test-docker").permitAll()
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout

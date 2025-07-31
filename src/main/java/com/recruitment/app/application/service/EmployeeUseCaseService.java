@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class EmployeeApplicationServicePort implements EmployeeUseCasePort {
+public class EmployeeUseCaseService implements EmployeeUseCasePort {
     private final EmployeeDataPort employeeDataPort;
     private final PasswordEncoder passwordEncoder;
 

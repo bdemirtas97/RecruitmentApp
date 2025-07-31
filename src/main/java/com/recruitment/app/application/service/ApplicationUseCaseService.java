@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class ApplicationApplicationService implements ApplicationUseCasePort {
+public class ApplicationUseCaseService implements ApplicationUseCasePort {
     private final CandidateDataPort candidateDataPort;
     private final PostingDataPort postingDataPort;
     private final ApplicationDataPort applicationDataPort;
@@ -36,6 +36,8 @@ public class ApplicationApplicationService implements ApplicationUseCasePort {
             throw new IllegalArgumentException("You have already applied for this posting.");
         }
 
+        String score = applicationDataPort.calculateSimilarityScore(candidate.getId(), postingId);
+
         Application application = Application.builder()
                 .id(UUID.randomUUID())
                 .candidate(candidate)
@@ -43,7 +45,7 @@ public class ApplicationApplicationService implements ApplicationUseCasePort {
                 .creationDate(LocalDateTime.now())
                 .status("APPLIED")
                 .coverLetterText(coverLetterText)
-                .score("0.0")
+                .score(score)
                 .build();
 
         applicationDataPort.addApplication(application);
@@ -54,5 +56,10 @@ public class ApplicationApplicationService implements ApplicationUseCasePort {
         UUID candidateId = candidateDataPort.findByEmail(candidateEmail)
                 .orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + candidateEmail)).getId();
         return applicationDataPort.findByCandidateId(candidateId);
+    }
+
+    @Override
+    public List<Application> findApplicationsForPosting(UUID postingId) {
+        return applicationDataPort.findByPostingId(postingId);
     }
 }

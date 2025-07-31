@@ -15,6 +15,9 @@ public class CandidateMapper {
         entity.setContactEmail(domain.getContactEmail());
         entity.setContactPhone(domain.getContactPhone());
         entity.setFileUrl(domain.getFileUrl());
+        entity.setSoftSkills(domain.getSoftSkills());
+        entity.setTechSkills(domain.getTechSkills());
+        entity.setEmbedding(domain.getEmbedding());
         return entity;
     }
 
@@ -29,6 +32,9 @@ public class CandidateMapper {
                 .contactEmail(entity.getContactEmail())
                 .contactPhone(entity.getContactPhone())
                 .fileUrl(entity.getFileUrl())
+                .softSkills(entity.getSoftSkills())
+                .techSkills(entity.getTechSkills())
+                .embedding(entity.getEmbedding())
                 .build();
     }
 }

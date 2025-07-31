@@ -1,15 +1,13 @@
 package com.recruitment.app.domain.model;
 
 import com.recruitment.app.infrastructure.web.dto.PostingUpdate;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 
 import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
+@Setter
 @Builder
 public class Posting {
     private UUID id;
@@ -23,6 +21,7 @@ public class Posting {
     private Employee recruiter;
     private Employee hiringManager;
     private String keywords;
+    private float[] embedding;
 
 
     public void updatePosting(PostingUpdate request){

@@ -7,4 +7,5 @@ import java.util.UUID;
 public interface ApplicationUseCasePort {
     void applyForPosting(String candidateEmail, UUID postingId, String coverLetterText);
     List<Application> findApplicationsForCandidate(String candidateEmail);
+    List<Application> findApplicationsForPosting(UUID postingId);
 }

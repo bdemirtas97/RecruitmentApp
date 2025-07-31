@@ -9,4 +9,6 @@ public interface ApplicationDataPort {
     Application addApplication(Application application);
     boolean existsByCandidateAndPostingId(UUID candidateId, UUID postingId);
     List<Application> findByCandidateId(UUID candidateId);
+    List<Application> findByPostingId(UUID postingId);
+    String calculateSimilarityScore(UUID candidateId, UUID postingId);
 }

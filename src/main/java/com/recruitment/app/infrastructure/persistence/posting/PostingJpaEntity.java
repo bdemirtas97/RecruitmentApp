@@ -1,9 +1,11 @@
 package com.recruitment.app.infrastructure.persistence.posting;
 
+import com.recruitment.app.infrastructure.persistence.VectorType;
 import com.recruitment.app.infrastructure.persistence.employee.EmployeeJpaEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Type;
 
 import java.util.UUID;
 
@@ -45,4 +47,8 @@ public class PostingJpaEntity {
     private EmployeeJpaEntity hiringManager;
 
     private String keywords;
+
+    @Column(name = "embedding", columnDefinition = "vector(384)")
+    @Type(VectorType.class)
+    private float[] embedding;
 }

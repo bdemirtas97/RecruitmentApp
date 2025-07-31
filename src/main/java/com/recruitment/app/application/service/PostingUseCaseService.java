@@ -5,8 +5,10 @@ import com.recruitment.app.domain.model.Posting;
 import com.recruitment.app.domain.port.in.PostingUseCasePort;
 import com.recruitment.app.domain.port.out.EmployeeDataPort;
 import com.recruitment.app.domain.port.out.PostingDataPort;
+import com.recruitment.app.domain.service.RecruitmentAIClient;
 import com.recruitment.app.infrastructure.web.dto.PostingCreationRequest;
 import com.recruitment.app.infrastructure.web.dto.PostingUpdate;
+import com.recruitment.app.utils.PostingStringfier;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,9 +19,10 @@ import java.util.UUID;
 
 @Service
 @AllArgsConstructor
-public class PostingApplicationServicePort implements PostingUseCasePort {
+public class PostingUseCaseService implements PostingUseCasePort {
     private EmployeeDataPort employeeDataPort;
     private final PostingDataPort postingDataPort;
+    private final RecruitmentAIClient aiClient;
 
     @Override
     @Transactional
@@ -42,6 +45,7 @@ public class PostingApplicationServicePort implements PostingUseCasePort {
                 .recruiter(recruiter)
                 .hiringManager(hiringManager)
                 .build();
+        posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getEmbedding());
 
         postingDataPort.addPosting(posting);
     }
@@ -65,6 +69,7 @@ public class PostingApplicationServicePort implements PostingUseCasePort {
         Posting posting = postingDataPort.findById(postingId)
                 .orElseThrow(() -> new EntityNotFoundException("Posting not found: " + postingId));;
         posting.updatePosting(request);
+        posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getEmbedding());
         postingDataPort.addPosting(posting);
     }
 

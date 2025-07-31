@@ -4,9 +4,11 @@ import com.recruitment.app.domain.model.Candidate;
 import com.recruitment.app.domain.port.in.CandidateUseCasePort;
 import com.recruitment.app.domain.port.out.CandidateDataPort;
 import com.recruitment.app.domain.port.out.FileStoragePort;
+import com.recruitment.app.domain.service.RecruitmentAIClient;
 import com.recruitment.app.infrastructure.web.dto.CandidateDetails;
 import com.recruitment.app.infrastructure.web.dto.CandidateProfileUpdate;
 import com.recruitment.app.infrastructure.web.dto.CandidateSignupRequest;
+import com.recruitment.app.infrastructure.web.dto.ResumeParsingResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,11 +20,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class CandidateApplicationServicePort implements CandidateUseCasePort {
+public class CandidateUseCaseService implements CandidateUseCasePort {
 
     private final CandidateDataPort candidateDataPort;
     private final PasswordEncoder passwordEncoder;
     private final FileStoragePort fileStoragePort;
+    private final RecruitmentAIClient aiClient;
 
     @Override
     @Transactional
@@ -58,6 +61,10 @@ public class CandidateApplicationServicePort implements CandidateUseCasePort {
         candidate.updateProfile(request);
         if(fileUrl != null){
             candidate.updateResumeUrl(fileUrl);
+            ResumeParsingResponse parsingResponse = aiClient.fetchParsedResume(fileUrl);
+            candidate.setSkills(String.join(", ", parsingResponse.getSoftSkills()),
+                    String.join(", ", parsingResponse.getTechSkills()));
+            candidate.setEmbedding(parsingResponse.getEmbedding());
         }
         candidateDataPort.addCandidate(candidate);
     }

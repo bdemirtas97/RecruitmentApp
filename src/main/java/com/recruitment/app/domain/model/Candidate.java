@@ -5,6 +5,7 @@ import lombok.*;
 import java.util.UUID;
 
 @Getter
+@Setter
 @AllArgsConstructor
 @Builder
 public class Candidate {
@@ -17,6 +18,9 @@ public class Candidate {
     private String contactEmail;
     private String contactPhone;
     private String fileUrl;
+    private String softSkills;
+    private String techSkills;
+    private float[] embedding;
 
     public void updateProfile(CandidateProfileUpdate request) {
         this.firstName = request.getFirstName();
@@ -27,5 +31,10 @@ public class Candidate {
 
     public void updateResumeUrl(String newUrl){
         this.fileUrl = newUrl;
+    }
+
+    public void setSkills(String softSkills, String techSkills){
+        this.softSkills = softSkills;
+        this.techSkills = techSkills;
     }
 }

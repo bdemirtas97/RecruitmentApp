@@ -4,13 +4,16 @@ import com.recruitment.app.domain.model.Posting;
 import com.recruitment.app.domain.port.out.PostingDataPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 interface SpringDataPostingRepository extends JpaRepository<PostingJpaEntity, UUID> {
+    @Query("select p from PostingJpaEntity p JOIN FETCH p.hiringManager WHERE p.recruiter.id = :id")
     List<PostingJpaEntity> findAllByRecruiterId(UUID id);
+    @Query("select p from PostingJpaEntity p JOIN FETCH p.recruiter WHERE p.hiringManager.id = :id")
     List<PostingJpaEntity> findAllByHiringManagerId(UUID id);
     List<PostingJpaEntity> findAllByStatus(String status);
 }
