@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 interface SpringDataApplicationRepository extends JpaRepository<ApplicationJpaEntity, UUID> {
@@ -27,6 +28,10 @@ interface SpringDataApplicationRepository extends JpaRepository<ApplicationJpaEn
 @RequiredArgsConstructor
 public class PostgresApplicationDataAdapter implements ApplicationDataPort {
     private final SpringDataApplicationRepository jpaRepository;
+
+    public Optional<Application> findById(UUID id){
+        return jpaRepository.findById(id).map(ApplicationMapper::toDomain);
+    }
 
 
     @Override

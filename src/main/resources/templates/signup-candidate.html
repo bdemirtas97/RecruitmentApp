@@ -4,6 +4,9 @@
 <body class="public-page">
 <div class="public-container" style="max-width: 500px;">
   <div class="card">
+    <div th:if="${errorMessage}" th:text="${errorMessage}" class="error-message">
+      Default message text (will be replaced).
+    </div>
     <h1>Candidate Signup</h1>
     <p>Create your account to get started.</p>
     <form th:action="@{/signup/candidate}" th:object="${signupRequest}" method="post">

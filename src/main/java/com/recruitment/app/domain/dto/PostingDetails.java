@@ -1,6 +1,5 @@
-package com.recruitment.app.infrastructure.web.dto;
+package com.recruitment.app.domain.dto;
 
-import com.recruitment.app.domain.model.Candidate;
 import com.recruitment.app.domain.model.Posting;
 import lombok.Value;
 

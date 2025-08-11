@@ -2,10 +2,10 @@ package com.recruitment.app.infrastructure.web;
 
 import com.recruitment.app.domain.port.in.ApplicationUseCasePort;
 import com.recruitment.app.domain.port.in.CandidateUseCasePort;
-import com.recruitment.app.infrastructure.web.dto.ApplicationSummaryDto;
-import com.recruitment.app.infrastructure.web.dto.CandidateDetails;
-import com.recruitment.app.infrastructure.web.dto.CandidateProfileUpdate;
-import com.recruitment.app.infrastructure.web.dto.CandidateSignupRequest;
+import com.recruitment.app.domain.dto.ApplicationSummaryDto;
+import com.recruitment.app.domain.dto.CandidateDetails;
+import com.recruitment.app.domain.dto.CandidateProfileUpdate;
+import com.recruitment.app.domain.dto.CandidateSignupRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -24,6 +24,7 @@ public class CandidateController {
 
     private final CandidateUseCasePort candidateUseCasePort;
     private final ApplicationUseCasePort applicationUseCasePort;
+
     @GetMapping("/signup/candidate")
     public String showSignupForm(Model model) {
         model.addAttribute("signupRequest", new CandidateSignupRequest());
@@ -50,6 +51,7 @@ public class CandidateController {
     @PostMapping("/candidate/profile")
     public String updateProfile(@Valid @ModelAttribute("profileUpdate") CandidateProfileUpdate request,
                                 BindingResult bindingResult,
+                                @ModelAttribute("profileDetails") CandidateDetails details,
                                 Principal principal, Model model,
                                 @RequestParam(value = "resumeFile", required = false) MultipartFile resumeFile) throws IOException {
         if (bindingResult.hasErrors()) {
@@ -71,11 +73,7 @@ public class CandidateController {
 
     @GetMapping("/candidate/applications")
     public String showMyApplications(Model model, Principal principal) {
-        List<ApplicationSummaryDto> applications = applicationUseCasePort.findApplicationsForCandidate(principal.getName())
-                .stream()
-                .map(ApplicationSummaryDto::fromDomain)
-                .toList();
-
+        List<ApplicationSummaryDto> applications = applicationUseCasePort.findApplicationsForCandidate(principal.getName());
         model.addAttribute("applications", applications);
         return "candidate-applications";
     }

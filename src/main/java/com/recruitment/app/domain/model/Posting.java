@@ -1,6 +1,6 @@
 package com.recruitment.app.domain.model;
 
-import com.recruitment.app.infrastructure.web.dto.PostingUpdate;
+import com.recruitment.app.domain.dto.PostingUpdate;
 import lombok.*;
 
 import java.util.UUID;

@@ -1,5 +1,6 @@
 package com.recruitment.app.infrastructure.storage;
 
+import com.recruitment.app.aop.exceptionhandling.ResumeUploadException;
 import com.recruitment.app.domain.port.out.FileStoragePort;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -25,20 +26,26 @@ public class S3StorageAdapter implements FileStoragePort {
     }
     @Override
     public String addResume(String objectKey, InputStream inputStream) throws IOException {
-        PutObjectRequest objectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(objectKey)
-                .build();
+        try{
+            PutObjectRequest objectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .build();
 
-        RequestBody requestBody = RequestBody.fromInputStream(inputStream, inputStream.available());
-        s3Client.putObject(objectRequest, requestBody);
+            RequestBody requestBody = RequestBody.fromInputStream(inputStream, inputStream.available());
+            s3Client.putObject(objectRequest, requestBody);
 
-        GetUrlRequest urlRequest = GetUrlRequest.builder()
-                .bucket(bucketName)
-                .key(objectKey)
-                .build();
+            GetUrlRequest urlRequest = GetUrlRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .build();
 
-        URL url = s3Client.utilities().getUrl(urlRequest);
-        return url.toExternalForm();
+            URL url = s3Client.utilities().getUrl(urlRequest);
+            return url.toExternalForm();
+        }
+        catch (Exception ex){
+            throw new IOException(ex.getMessage());
+        }
+
     }
 }

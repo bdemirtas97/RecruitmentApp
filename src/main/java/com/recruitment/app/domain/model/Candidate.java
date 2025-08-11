@@ -1,6 +1,6 @@
 package com.recruitment.app.domain.model;
 
-import com.recruitment.app.infrastructure.web.dto.CandidateProfileUpdate;
+import com.recruitment.app.domain.dto.CandidateProfileUpdate;
 import lombok.*;
 import java.util.UUID;
 
@@ -20,6 +20,7 @@ public class Candidate {
     private String fileUrl;
     private String softSkills;
     private String techSkills;
+    private String parsedCv;
     private float[] embedding;
 
     public void updateProfile(CandidateProfileUpdate request) {

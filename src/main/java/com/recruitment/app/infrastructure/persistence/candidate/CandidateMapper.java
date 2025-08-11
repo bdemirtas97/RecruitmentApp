@@ -17,6 +17,7 @@ public class CandidateMapper {
         entity.setFileUrl(domain.getFileUrl());
         entity.setSoftSkills(domain.getSoftSkills());
         entity.setTechSkills(domain.getTechSkills());
+        entity.setParsedCv(domain.getParsedCv());
         entity.setEmbedding(domain.getEmbedding());
         return entity;
     }
@@ -34,6 +35,7 @@ public class CandidateMapper {
                 .fileUrl(entity.getFileUrl())
                 .softSkills(entity.getSoftSkills())
                 .techSkills(entity.getTechSkills())
+                .parsedCv(entity.getParsedCv())
                 .embedding(entity.getEmbedding())
                 .build();
     }

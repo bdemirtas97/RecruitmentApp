@@ -1,7 +1,7 @@
 package com.recruitment.app.infrastructure.web;
 
 import com.recruitment.app.domain.port.in.ApplicationUseCasePort;
-import com.recruitment.app.infrastructure.web.dto.ApplicationRequest;
+import com.recruitment.app.domain.dto.ApplicationRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

@@ -1,22 +1,23 @@
 package com.recruitment.app.application.service;
 
+import com.recruitment.app.aop.exceptionhandling.ResumeUploadException;
+import com.recruitment.app.aop.exceptionhandling.UserAlreadyExistsException;
+import com.recruitment.app.domain.dto.*;
 import com.recruitment.app.domain.model.Candidate;
 import com.recruitment.app.domain.port.in.CandidateUseCasePort;
 import com.recruitment.app.domain.port.out.CandidateDataPort;
 import com.recruitment.app.domain.port.out.FileStoragePort;
 import com.recruitment.app.domain.service.RecruitmentAIClient;
-import com.recruitment.app.infrastructure.web.dto.CandidateDetails;
-import com.recruitment.app.infrastructure.web.dto.CandidateProfileUpdate;
-import com.recruitment.app.infrastructure.web.dto.CandidateSignupRequest;
-import com.recruitment.app.infrastructure.web.dto.ResumeParsingResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
+import com.recruitment.app.aop.exceptionhandling.AIServiceResumeException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class CandidateUseCaseService implements CandidateUseCasePort {
     @Transactional
     public void signup(CandidateSignupRequest request) {
         if (candidateDataPort.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("A candidate with this email already exists.");
+            throw new UserAlreadyExistsException("A candidate with this email already exists.", request);
         }
 
         String hashedPassword = passwordEncoder.encode(request.getPassword());
@@ -49,31 +50,45 @@ public class CandidateUseCaseService implements CandidateUseCasePort {
 
     @Override
     @Transactional
-    public void updateProfile(String email, CandidateProfileUpdate request, InputStream fileStream, String originalFileName) throws IOException {
+    public void updateProfile(String email, CandidateProfileUpdate request, InputStream fileStream, String originalFileName) throws ResumeUploadException {
         Candidate candidate = candidateDataPort.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + email));
         String fileUrl = null;
         if(fileStream != null){
             String fileName = "%s_%s".formatted(UUID.randomUUID(), originalFileName);
-            fileUrl = fileStoragePort.addResume(fileName, fileStream);
-
+            try{
+                fileUrl = fileStoragePort.addResume(fileName, fileStream);
+            }
+            catch (Exception ex){
+                throw new ResumeUploadException("Resume file could not uploaded", ex.getMessage(), request);
+            }
         }
-        candidate.updateProfile(request);
         if(fileUrl != null){
-            candidate.updateResumeUrl(fileUrl);
-            ResumeParsingResponse parsingResponse = aiClient.fetchParsedResume(fileUrl);
-            candidate.setSkills(String.join(", ", parsingResponse.getSoftSkills()),
-                    String.join(", ", parsingResponse.getTechSkills()));
-            candidate.setEmbedding(parsingResponse.getEmbedding());
+            try{
+                ResumeParsingResponse parsingResponse = aiClient.fetchParsedResume(fileUrl);
+                candidate.updateResumeUrl(fileUrl);
+                candidate.updateProfile(request);
+                candidate.setSkills(String.join(", ", parsingResponse.getSoft_skills()),
+                        String.join(", ", parsingResponse.getTech_skills()));
+                candidate.setEmbedding(parsingResponse.getParsed_cv_vector());
+                candidate.setParsedCv(parsingResponse.getParsed_cv_text());
+            }
+            catch(WebClientResponseException ex){
+                throw new AIServiceResumeException("Resume file couldn't be analyzed!", ex.getMessage(), ex.getResponseBodyAsString(), request);
+            }
         }
         candidateDataPort.addCandidate(candidate);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public CandidateDetails getDetailsByEmail(String email) {
         return candidateDataPort.findByEmail(email)
                 .map(CandidateDetails::fromDomain)
                 .orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + email));
+    }
+
+    @Override
+    public List<CandidateSearchResult> findBestCandidatesForPosting(UUID postingId) {
+        return candidateDataPort.findBestCandidatesByPostingId(postingId);
     }
 }

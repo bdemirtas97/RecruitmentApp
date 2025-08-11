@@ -1,8 +1,8 @@
-package com.recruitment.app.infrastructure.web.dto;
+package com.recruitment.app.domain.dto;
 
 import lombok.Value;
 
 @Value
 public class ResumeParsingRequest {
-    String url;
+    String resume;
 }

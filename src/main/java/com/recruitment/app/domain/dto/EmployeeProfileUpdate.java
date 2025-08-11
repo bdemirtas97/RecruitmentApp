@@ -1,4 +1,4 @@
-package com.recruitment.app.infrastructure.web.dto;
+package com.recruitment.app.domain.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

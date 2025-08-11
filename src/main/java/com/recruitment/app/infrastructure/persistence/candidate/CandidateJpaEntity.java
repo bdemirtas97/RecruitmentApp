@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Type;
-
 import java.util.UUID;
 
 @Entity
@@ -37,11 +36,16 @@ public class CandidateJpaEntity {
 
     private String fileUrl;
 
+    @Column(length=5000)
     private String softSkills;
 
+    @Column(length=10000)
     private String techSkills;
 
-    @Column(name = "embedding", columnDefinition = "vector(384)")
+    @Column(length=10000)
+    private String parsedCv;
+
+    @Column(name = "embedding", columnDefinition = "vector(768)")
     @Type(VectorType.class)
     private float[] embedding;
 }

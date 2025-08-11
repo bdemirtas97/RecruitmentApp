@@ -1,10 +1,11 @@
 package com.recruitment.app.application.service;
 
+import com.recruitment.app.domain.dto.HiringManagerDto;
 import com.recruitment.app.domain.model.Employee;
 import com.recruitment.app.domain.port.in.EmployeeUseCasePort;
 import com.recruitment.app.domain.port.out.EmployeeDataPort;
-import com.recruitment.app.infrastructure.web.dto.EmployeeDetails;
-import com.recruitment.app.infrastructure.web.dto.EmployeeSignupRequest;
+import com.recruitment.app.domain.dto.EmployeeDetails;
+import com.recruitment.app.domain.dto.EmployeeSignupRequest;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,7 +51,7 @@ public class EmployeeUseCaseService implements EmployeeUseCasePort {
     }
 
     @Override
-    public List<Employee> findHiringManagers() {
-        return employeeDataPort.findAllEmployeesByRole("HIRING_MANAGER");
+    public List<HiringManagerDto> findHiringManagers() {
+        return employeeDataPort.findAllEmployeesByRole("HIRING_MANAGER").stream().map(HiringManagerDto::fromDomain).toList();
     }
 }

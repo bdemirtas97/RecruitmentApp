@@ -1,11 +1,13 @@
 package com.recruitment.app.domain.port.in;
 
-import com.recruitment.app.domain.model.Application;
+import com.recruitment.app.domain.dto.AnalyzeResponse;
+import com.recruitment.app.domain.dto.ApplicationDetailsDto;
+import com.recruitment.app.domain.dto.ApplicationSummaryDto;
 import java.util.List;
 import java.util.UUID;
 
 public interface ApplicationUseCasePort {
     void applyForPosting(String candidateEmail, UUID postingId, String coverLetterText);
-    List<Application> findApplicationsForCandidate(String candidateEmail);
-    List<Application> findApplicationsForPosting(UUID postingId);
+    List<ApplicationSummaryDto> findApplicationsForCandidate(String candidateEmail);
+    List<ApplicationDetailsDto> findApplicationsForPosting(UUID postingId);
 }

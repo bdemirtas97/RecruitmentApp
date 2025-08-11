@@ -27,6 +27,7 @@ public class ApplicationJpaEntity {
     @Column(nullable=false)
     private LocalDateTime creationDate;
 
+    @Column(length=5000)
     private String CoverLetterText;
 
     @Column(nullable=false)

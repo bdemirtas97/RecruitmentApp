@@ -3,6 +3,7 @@ package com.recruitment.app.domain.port.out;
 import com.recruitment.app.domain.model.Application;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ApplicationDataPort {
@@ -11,4 +12,5 @@ public interface ApplicationDataPort {
     List<Application> findByCandidateId(UUID candidateId);
     List<Application> findByPostingId(UUID postingId);
     String calculateSimilarityScore(UUID candidateId, UUID postingId);
+    Optional<Application> findById(UUID id);
 }

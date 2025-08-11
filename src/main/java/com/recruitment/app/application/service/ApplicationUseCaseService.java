@@ -1,5 +1,9 @@
 package com.recruitment.app.application.service;
 
+import com.recruitment.app.domain.dto.AnalyzeResponse;
+import com.recruitment.app.domain.dto.ApplicationDetailsDto;
+import com.recruitment.app.domain.dto.ApplicationSummaryDto;
+import com.recruitment.app.domain.dto.MatchAnalyzeResponse;
 import com.recruitment.app.domain.model.Application;
 import com.recruitment.app.domain.model.Candidate;
 import com.recruitment.app.domain.model.Posting;
@@ -7,6 +11,8 @@ import com.recruitment.app.domain.port.in.ApplicationUseCasePort;
 import com.recruitment.app.domain.port.out.ApplicationDataPort;
 import com.recruitment.app.domain.port.out.CandidateDataPort;
 import com.recruitment.app.domain.port.out.PostingDataPort;
+import com.recruitment.app.domain.service.RecruitmentAIClient;
+import com.recruitment.app.utils.PostingStringfier;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -52,14 +58,14 @@ public class ApplicationUseCaseService implements ApplicationUseCasePort {
     }
 
     @Override
-    public List<Application> findApplicationsForCandidate(String candidateEmail) {
+    public List<ApplicationSummaryDto> findApplicationsForCandidate(String candidateEmail) {
         UUID candidateId = candidateDataPort.findByEmail(candidateEmail)
                 .orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + candidateEmail)).getId();
-        return applicationDataPort.findByCandidateId(candidateId);
+        return applicationDataPort.findByCandidateId(candidateId).stream().map(ApplicationSummaryDto::fromDomain).toList();
     }
 
     @Override
-    public List<Application> findApplicationsForPosting(UUID postingId) {
-        return applicationDataPort.findByPostingId(postingId);
+    public List<ApplicationDetailsDto> findApplicationsForPosting(UUID postingId) {
+        return applicationDataPort.findByPostingId(postingId).stream().map(ApplicationDetailsDto::fromDomain).toList();
     }
 }

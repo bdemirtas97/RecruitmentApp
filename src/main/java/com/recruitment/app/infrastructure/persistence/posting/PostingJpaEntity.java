@@ -32,7 +32,7 @@ public class PostingJpaEntity {
     @Column(nullable=false)
     private String workingType;
 
-    @Column(nullable=false)
+    @Column(nullable=false, length=5000)
     private String details;
 
     @Column(nullable=false)
@@ -46,9 +46,10 @@ public class PostingJpaEntity {
     @JoinColumn(name = "hiringManagerId")
     private EmployeeJpaEntity hiringManager;
 
+    @Column(length=1000)
     private String keywords;
 
-    @Column(name = "embedding", columnDefinition = "vector(384)")
+    @Column(name = "embedding", columnDefinition = "vector(768)")
     @Type(VectorType.class)
     private float[] embedding;
 }

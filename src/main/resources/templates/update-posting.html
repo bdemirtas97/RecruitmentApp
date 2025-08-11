@@ -2,7 +2,197 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/head :: common_head(pageTitle='Update Job Posting')}"></head>
+<script>
+    function toggleApplicationDetails(row) {
+        const detailsRow = row.nextElementSibling;
 
+        // Close all other open details
+        document.querySelectorAll('.application-row.expanded').forEach(expandedRow => {
+            if (expandedRow !== row) {
+                expandedRow.classList.remove('expanded');
+                expandedRow.nextElementSibling.classList.remove('show');
+            }
+        });
+
+        // Toggle current row
+        row.classList.toggle('expanded');
+        detailsRow.classList.toggle('show');
+    }
+
+    function toggleCandidateDetails(row) {
+        const detailsRow = row.nextElementSibling;
+
+        // Close all other open details (both applications and candidates)
+        document.querySelectorAll('.candidate-row.expanded').forEach(expandedRow => {
+            if (expandedRow !== row) {
+                expandedRow.classList.remove('expanded');
+                expandedRow.nextElementSibling.classList.remove('show');
+            }
+        });
+
+        // Toggle current row
+        row.classList.toggle('expanded');
+        detailsRow.classList.toggle('show');
+    }
+
+    // Close details when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.application-row') && !event.target.closest('.application-details-row') &&
+            !event.target.closest('.candidate-row') && !event.target.closest('.candidate-details-row')) {
+
+            // Close application details
+            document.querySelectorAll('.application-row.expanded').forEach(row => {
+                row.classList.remove('expanded');
+                row.nextElementSibling.classList.remove('show');
+            });
+
+            // Close candidate details
+            document.querySelectorAll('.candidate-row.expanded').forEach(row => {
+                row.classList.remove('expanded');
+                row.nextElementSibling.classList.remove('show');
+            });
+        }
+    });
+
+    function getApplicationAnalysis(button) {
+        const applicationId = button.getAttribute('data-application-id');
+        const resultDiv = document.getElementById(`result-${applicationId}`);
+        showLoading(resultDiv, 'Analyzing resume...');
+
+        fetch(`/postings/applications/${applicationId}/match-analyze`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.statusText}`);
+            }
+            return response.json();
+        })
+            .then(data => {
+                if (data && data.summaryResult) {
+                    const formattedHtml = formatSummaryToHtml(data.summaryResult);
+                    showResult(resultDiv, formattedHtml, 'info');
+                } else {
+                    showResult(resultDiv, 'Analysis completed, but no summary was returned.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showResult(resultDiv, 'An error occurred during analysis.', 'error');
+            });
+    }
+
+    function getCandidateAnalysis(button) {
+        const candidateId = button.getAttribute('data-candidate-id');
+        const postingId = button.getAttribute('data-posting-id');
+        const resultDiv = document.getElementById(`candidate-result-${candidateId}`);
+        showLoading(resultDiv, 'Analyzing candidate match...');
+
+        fetch(`/postings/${postingId}/candidates/${candidateId}/match-analyze`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.statusText}`);
+            }
+            return response.json();
+        })
+            .then(data => {
+                if (data && data.summaryResult) {
+                    const formattedHtml = formatSummaryToHtml(data.summaryResult);
+                    showResult(resultDiv, formattedHtml, 'info');
+                } else {
+                    showResult(resultDiv, 'Analysis completed, but no summary was returned.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showResult(resultDiv, 'An error occurred during analysis.', 'error');
+            });
+    }
+
+    // Helper functions
+    function showLoading(element, message) {
+        element.style.display = 'block';
+        element.className = 'application-result loading';
+        element.innerHTML = message;
+    }
+
+    function showResult(element, message, type) {
+        element.style.display = 'block';
+        element.className = `application-result ${type}`;
+
+        const containsHTML = /<\/?[a-z][\s\S]*>/i.test(message);
+
+        if (containsHTML) {
+            element.innerHTML = message;
+        } else {
+            element.textContent = message;
+        }
+
+        if (type === 'success') {
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+    }
+
+
+    function formatSummaryToHtml(text) {
+        const normalized = text.replace(/\r\n/g, '\n');
+        const lines = normalized.split('\n');
+
+        let html = '';
+        let inList = false;
+
+        for (let rawLine of lines) {
+            const line = rawLine.trim();
+            if (!line) continue;
+
+            const headingMatch = line.match(/^(#{1,6})\s*(.*)$/);
+            if (headingMatch) {
+                if (inList) {
+                    html += '</ul>';
+                    inList = false;
+                }
+                const level = Math.min(6, headingMatch[1].length);
+                const headingText = headingMatch[2].trim();
+                html += `<h${level}>${headingText}</h${level}>`;
+                continue;
+            }
+
+            const bulletMatch = line.match(/^[-*]\s+(.*)$/);
+            if (bulletMatch) {
+                if (!inList) {
+                    html += '<ul>';
+                    inList = true;
+                }
+                const itemText = bulletMatch[1].trim();
+                html += `<li>${itemText}</li>`;
+                continue;
+            }
+
+            if (inList) {
+                html += '</ul>';
+                inList = false;
+            }
+            html += `<p>${line}</p>`;
+        }
+
+        if (inList) {
+            html += '</ul>';
+        }
+
+        return html;
+    }
+
+</script>
 <body class="portal-page">
 
 <div th:replace="~{fragments/sidebar :: sidebar}"></div>
@@ -67,35 +257,171 @@
         </form>
     </div>
 
-    <div class="card" style="margin-top: 2rem;">
+    <div class="card">
         <h2>Applications Received</h2>
-        <hr>
-        <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-            <tr style="text-align: left; border-bottom: 2px solid #dee2e6;">
-                <th style="padding: 0.75rem;">Candidate Name</th>
-                <th style="padding: 0.75rem;">Contact Email</th>
-                <th style="padding: 0.75rem;">Date Applied</th>
-                <th style="padding: 0.75rem;">Score</th>
-                <th style="padding: 0.75rem;">Resume</th>
+
+        <table class="applications-table">
+            <thead class="applications-table-header">
+            <tr>
+                <th>Candidate Name</th>
+                <th>Contact Email</th>
+                <th>Date Applied</th>
+                <th>Score</th>
+                <th>Resume</th>
+                <th style="width: 50px;"></th>
             </tr>
             </thead>
             <tbody>
             <tr th:if="${applications.isEmpty()}">
-                <td colspan="4" style="padding: 1rem; text-align: center;">
+                <td colspan="6" class="application-empty-state">
                     There are no applications for this posting yet.
                 </td>
             </tr>
-            <tr th:each="app : ${applications}" style="border-bottom: 1px solid #dee2e6;">
-                <td style="padding: 0.75rem;" th:text="${app.candidateFullName}">John Doe</td>
-                <td style="padding: 0.75rem;" th:text="${app.candidateEmail}">x@y.com</td>
-                <td style="padding: 0.75rem;" th:text="${app.applicationDate}">22 July 2025</td>
-                <td style="padding: 0.75rem;" th:text="${app.score}">22 July 2025</td>
-                <td style="padding: 0.75rem;">
-                    <a th:if="${app.resumeUrl != null}" th:href="${app.resumeUrl}" target="_blank" class="button">View Resume</a>
-                    <span th:if="${app.resumeUrl == null}">No Resume</span>
+
+            <th:block th:each="app : ${applications}">
+                <tr class="application-row" onclick="toggleApplicationDetails(this)">
+                    <td th:text="${app.candidateFullName}">John Doe</td>
+                    <td th:text="${app.candidateEmail}">john.doe@email.com</td>
+                    <td th:text="${#temporals.format(app.applicationDate, 'dd MMM yyyy')}">22 July 2025</td>
+                    <td th:text="${app.score}">85</td>
+                    <td>
+                        <a th:if="${app.resumeUrl != null}" th:href="${app.resumeUrl}"
+                           target="_blank" class="button">View Resume</a>
+                        <span th:if="${app.resumeUrl == null}" class="application-no-resume">No Resume</span>
+                    </td>
+                    <td>
+                        <span class="expand-icon">▼</span>
+                    </td>
+                </tr>
+                <tr class="application-details-row">
+                    <td colspan="6">
+                        <div class="application-details-content">
+                            <div class="application-details-grid">
+                                <div class="application-detail-item">
+                                    <span class="application-detail-label">Full Name</span>
+                                    <span class="application-detail-value" th:text="${app.candidateFullName}">John Doe</span>
+                                </div>
+                                <div class="application-detail-item" th:if="${app.contactPhone}">
+                                    <span class="application-detail-label">Phone</span>
+                                    <span class="application-detail-value" th:text="${app.contactPhone ?: 'Not provided'}">+90 555 123 4567</span>
+                                </div>
+                                <div class="application-detail-item" th:if="${app.softSkills}">
+                                    <span class="application-detail-label">Soft Skills</span>
+                                    <span class="application-detail-value" th:text="${app.softSkills}">Java, Spring Boot, React</span>
+                                </div>
+                                <div class="application-detail-item" th:if="${app.techSkills}">
+                                    <span class="application-detail-label">Tech Skills</span>
+                                    <span class="application-detail-value" th:text="${app.techSkills}">Java, Spring Boot, React</span>
+                                </div>
+                                <div class="application-detail-item">
+                                    <span class="application-detail-label">Cover Letter</span>
+                                    <span class="application-detail-value" th:text="${app.coverLetter}">Available</span>
+                                </div>
+                            </div>
+                            <div class="application-detail-item" th:if="${app.score}">
+                                <span class="application-detail-label">Score</span>
+                                <span class="application-detail-value" th:text="${app.score}">Additional notes about the candidate...</span>
+                            </div>
+                            <div class="application-detail-item" style="margin-top: 1.5rem;">
+                                <div class="application-action-buttons">
+                                    <button type="button" class="button"
+                                            th:attr="data-application-id=${app.applicationId}"
+                                            onclick="getApplicationAnalysis(this)"
+                                            style="background-color: var(--success-color); margin-left: 0.5rem;">
+                                        Analyze Resume
+                                    </button>
+                                </div>
+
+                                <!-- Result area for AJAX responses -->
+                                <div th:id="|result-${app.applicationId}|" class="application-result"
+                                     style="margin-top: 1rem; display: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </th:block>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card" style="margin-top: 2rem;">
+        <h2>Best Candidate Matches</h2>
+        <p style="color: #6c757d;">Top candidates from the database who have not yet applied, ranked by resume similarity.</p>
+        <hr>
+
+        <table class="applications-table">
+            <thead class="applications-table-header">
+            <tr>
+                <th>Candidate Name</th>
+                <th>Contact Email</th>
+                <th>Match Score</th>
+                <th>Resume</th>
+                <th style="width: 50px;"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${bestMatches.isEmpty()}">
+                <td colspan="5" class="application-empty-state">
+                    Could not find any matching candidates in the database.
                 </td>
             </tr>
+
+            <th:block th:each="candidate : ${bestMatches}">
+                <tr class="candidate-row application-row" onclick="toggleCandidateDetails(this)">
+                    <td th:text="${candidate.candidateFullName}">Jane Candidate</td>
+                    <td th:text="${candidate.candidateEmail}">jane.c@example.com</td>
+                    <td th:text="${candidate.score}" style="font-weight: 600;">95.43%</td>
+                    <td>
+                        <a th:if="${candidate.resumeUrl != null}" th:href="${candidate.resumeUrl}"
+                           target="_blank" class="button">View Resume</a>
+                        <span th:if="${candidate.resumeUrl == null}" class="application-no-resume">No Resume</span>
+                    </td>
+                    <td>
+                        <span class="expand-icon">▼</span>
+                    </td>
+                </tr>
+                <tr class="candidate-details-row application-details-row">
+                    <td colspan="5">
+                        <div class="application-details-content">
+                            <div class="application-details-grid">
+                                <div class="application-detail-item">
+                                    <span class="application-detail-label">Full Name</span>
+                                    <span class="application-detail-value" th:text="${candidate.candidateFullName}">Jane Candidate</span>
+                                </div>
+                                <div class="application-detail-item" th:if="${candidate.candidatePhone}">
+                                    <span class="application-detail-label">Phone</span>
+                                    <span class="application-detail-value" th:text="${candidate.candidatePhone ?: 'Not provided'}">+90 555 987 6543</span>
+                                </div>
+                                <div class="application-detail-item" th:if="${candidate.softSkills}">
+                                    <span class="application-detail-label">Soft Skills</span>
+                                    <span class="application-detail-value" th:text="${candidate.softSkills}">Leadership, Communication, Problem Solving</span>
+                                </div>
+                                <div class="application-detail-item" th:if="${candidate.techSkills}">
+                                    <span class="application-detail-label">Tech Skills</span>
+                                    <span class="application-detail-value" th:text="${candidate.techSkills}">Python, Machine Learning, AWS</span>
+                                </div>
+                            </div>
+                            <div class="application-detail-item" style="margin-top: 1.5rem;">
+                                <div class="application-action-buttons">
+                                    <button type="button" class="button"
+                                            th:attr="data-candidate-id=${candidate.candidateId},
+                                                     data-posting-id=${candidate.postingId}"
+                                            onclick="getCandidateAnalysis(this)"
+                                            style="background-color: var(--success-color); margin-left: 0.5rem;">
+                                        Analyze Match
+                                    </button>
+                                </div>
+
+                                <!-- Result area for AJAX responses -->
+                                <div th:id="|candidate-result-${candidate.candidateId}|" class="application-result"
+                                     style="margin-top: 1rem; display: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </th:block>
             </tbody>
         </table>
     </div>

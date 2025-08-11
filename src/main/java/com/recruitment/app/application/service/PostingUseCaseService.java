@@ -1,18 +1,22 @@
 package com.recruitment.app.application.service;
 
+import com.recruitment.app.domain.dto.*;
+import com.recruitment.app.domain.model.Application;
+import com.recruitment.app.domain.model.Candidate;
 import com.recruitment.app.domain.model.Employee;
 import com.recruitment.app.domain.model.Posting;
 import com.recruitment.app.domain.port.in.PostingUseCasePort;
+import com.recruitment.app.domain.port.out.ApplicationDataPort;
+import com.recruitment.app.domain.port.out.CandidateDataPort;
 import com.recruitment.app.domain.port.out.EmployeeDataPort;
 import com.recruitment.app.domain.port.out.PostingDataPort;
 import com.recruitment.app.domain.service.RecruitmentAIClient;
-import com.recruitment.app.infrastructure.web.dto.PostingCreationRequest;
-import com.recruitment.app.infrastructure.web.dto.PostingUpdate;
 import com.recruitment.app.utils.PostingStringfier;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +26,8 @@ import java.util.UUID;
 public class PostingUseCaseService implements PostingUseCasePort {
     private EmployeeDataPort employeeDataPort;
     private final PostingDataPort postingDataPort;
+    private final ApplicationDataPort applicationDataPort;
+    private final CandidateDataPort candidateDataPort;
     private final RecruitmentAIClient aiClient;
 
     @Override
@@ -31,6 +37,7 @@ public class PostingUseCaseService implements PostingUseCasePort {
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found: " + email));
         Employee hiringManager = employeeDataPort.findById(request.getHiringManagerId())
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found: " + email));
+
 
         Posting posting = Posting.builder()
                 .id(UUID.randomUUID())
@@ -45,16 +52,22 @@ public class PostingUseCaseService implements PostingUseCasePort {
                 .recruiter(recruiter)
                 .hiringManager(hiringManager)
                 .build();
-        posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getEmbedding());
+
+        //try {
+            posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getPosting_vector());
+        //}
+        //catch (WebClientResponseException ex){
+        //    throw AIServicePostingException
+        //}
 
         postingDataPort.addPosting(posting);
     }
 
     @Override
-    public List<Posting> findPostingsForRecruiter(String email) {
+    public List<PostingSummary> findPostingsForRecruiter(String email) {
         UUID recruiterId = employeeDataPort.findByEmail(email)
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found: " + email)).getId();
-        return postingDataPort.findPostingsByIdForRecruiter(recruiterId);
+        return postingDataPort.findPostingsByIdForRecruiter(recruiterId).stream().map(PostingSummary::fromDomain).toList();
     }
 
     @Override
@@ -67,14 +80,31 @@ public class PostingUseCaseService implements PostingUseCasePort {
     @Transactional
     public void updatePosting(UUID postingId, PostingUpdate request) {
         Posting posting = postingDataPort.findById(postingId)
-                .orElseThrow(() -> new EntityNotFoundException("Posting not found: " + postingId));;
+                .orElseThrow(() -> new EntityNotFoundException("Posting not found: " + postingId));
         posting.updatePosting(request);
-        posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getEmbedding());
+        posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getPosting_vector());
         postingDataPort.addPosting(posting);
     }
 
     @Override
-    public List<Posting> findAllActivePostings() {
-        return postingDataPort.findAllByStatus("ACTIVE");
+    public List<PostingSummaryForCandidate> findAllActivePostings() {
+        return postingDataPort.findAllByStatus("ACTIVE").stream().map(PostingSummaryForCandidate::fromDomain).toList();
+    }
+
+    @Override
+    public String fetchMatchAnalyzeForPosting(UUID applicationId) {
+        Application application = applicationDataPort.findById(applicationId).orElseThrow(() -> new EntityNotFoundException("Application not found: " + applicationId));
+        Posting posting = postingDataPort.findById(application.getPosting().getId()).orElseThrow(() -> new EntityNotFoundException("Posting not found: " + application.getPosting().getId()));
+        Candidate candidate = candidateDataPort.findById(application.getCandidate().getId()).orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + application.getCandidate().getId()));
+        MatchAnalyzeResponse response = aiClient.fetchAnalyzeResult(candidate.getParsedCv(), PostingStringfier.fieldsToString(posting));
+        return response.getResult();
+    }
+
+    @Override
+    public String fetchMatchAnalyzeForBestCandidate(UUID postingId, UUID candidateId) {
+        Posting posting = postingDataPort.findById(postingId).orElseThrow(() -> new EntityNotFoundException("Posting not found: " + postingId));
+        Candidate candidate = candidateDataPort.findById(candidateId).orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + candidateId));
+        MatchAnalyzeResponse response = aiClient.fetchAnalyzeResult(candidate.getParsedCv(), PostingStringfier.fieldsToString(posting));
+        return response.getResult();
     }
 }

@@ -1,8 +1,8 @@
 package com.recruitment.app.infrastructure.web;
 
 import com.recruitment.app.domain.port.in.EmployeeUseCasePort;
-import com.recruitment.app.infrastructure.web.dto.EmployeeDetails;
-import com.recruitment.app.infrastructure.web.dto.EmployeeSignupRequest;
+import com.recruitment.app.domain.dto.EmployeeDetails;
+import com.recruitment.app.domain.dto.EmployeeSignupRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -11,7 +11,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-
 import java.security.Principal;
 
 @Controller
