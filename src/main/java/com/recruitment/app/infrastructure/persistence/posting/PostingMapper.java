@@ -18,6 +18,8 @@ public class PostingMapper {
                 .recruiter(EmployeeMapper.toDomain(entity.getRecruiter()))
                 .hiringManager(EmployeeMapper.toDomain(entity.getHiringManager()))
                 .embedding(entity.getEmbedding())
+                .careerField(entity.getCareerField())
+                .department(entity.getDepartment())
                 .build();
     }
 
@@ -35,6 +37,8 @@ public class PostingMapper {
         entity.setHiringManager(EmployeeMapper.toJpaEntity(domain.getHiringManager()));
         entity.setKeywords(domain.getKeywords());
         entity.setEmbedding(domain.getEmbedding());
+        entity.setCareerField(domain.getCareerField());
+        entity.setDepartment(domain.getDepartment());
         return entity;
     }
 }

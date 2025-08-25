@@ -1,9 +1,7 @@
 package com.recruitment.app.application.service;
 
-import com.recruitment.app.domain.dto.AnalyzeResponse;
 import com.recruitment.app.domain.dto.ApplicationDetailsDto;
 import com.recruitment.app.domain.dto.ApplicationSummaryDto;
-import com.recruitment.app.domain.dto.MatchAnalyzeResponse;
 import com.recruitment.app.domain.model.Application;
 import com.recruitment.app.domain.model.Candidate;
 import com.recruitment.app.domain.model.Posting;
@@ -11,13 +9,10 @@ import com.recruitment.app.domain.port.in.ApplicationUseCasePort;
 import com.recruitment.app.domain.port.out.ApplicationDataPort;
 import com.recruitment.app.domain.port.out.CandidateDataPort;
 import com.recruitment.app.domain.port.out.PostingDataPort;
-import com.recruitment.app.domain.service.RecruitmentAIClient;
-import com.recruitment.app.utils.PostingStringfier;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;

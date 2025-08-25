@@ -6,6 +6,7 @@ import lombok.*;
 import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor
 @Getter
 @Setter
 @Builder
@@ -22,6 +23,8 @@ public class Posting {
     private Employee hiringManager;
     private String keywords;
     private float[] embedding;
+    private String careerField;
+    private String department;
 
 
     public void updatePosting(PostingUpdate request){

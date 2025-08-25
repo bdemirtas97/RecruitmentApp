@@ -7,7 +7,7 @@ import com.recruitment.app.domain.model.Candidate;
 import com.recruitment.app.domain.port.in.CandidateUseCasePort;
 import com.recruitment.app.domain.port.out.CandidateDataPort;
 import com.recruitment.app.domain.port.out.FileStoragePort;
-import com.recruitment.app.domain.service.RecruitmentAIClient;
+import com.recruitment.app.infrastructure.service.RecruitmentAIClient;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,6 +1,50 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: common_head(pageTitle='Manage Job Postings')}"></head>
+<script>
+    function importPostings() {
+        const resultDiv = document.getElementById("result");
+        showLoading(resultDiv, 'Importing postings...');
+
+        fetch(`/postings/posting-imports`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.statusText}`);
+            }
+            return response.json();
+        })
+            .then(() => {
+                    showResult(resultDiv, 'Postings imported succesfully.', 'info');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showResult(resultDiv, 'An error occurred during importing.', 'error');
+            });
+    }
+    function showLoading(element, message) {
+        element.style.display = 'block';
+        element.className = 'application-result loading';
+        element.innerHTML = message;
+    }
+
+    function showResult(element, message, type) {
+        element.style.display = 'block';
+        element.className = `application-result ${type}`;
+        element.textContent = message;
+
+
+        if (type === 'success') {
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+    }
+</script>
 <body class="portal-page">
 
 <div th:replace="~{fragments/sidebar :: sidebar}"></div>
@@ -39,6 +83,19 @@
             </tr>
             </tbody>
         </table>
+        <div class="application-detail-item" style="margin-top: 1.5rem;">
+            <div class="application-action-buttons">
+                <button type="button" class="button"
+                        onclick="importPostings()"
+                        style="background-color: var(--success-color); margin-left: 0.5rem;">
+                    Import Postings from Lever
+                </button>
+            </div>
+
+            <div th:id="result" class="application-result"
+                 style="margin-top: 1rem; display: none;">
+            </div>
+        </div>
     </div>
 </div>
 

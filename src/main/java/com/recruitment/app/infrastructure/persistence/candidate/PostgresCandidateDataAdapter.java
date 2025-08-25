@@ -63,4 +63,9 @@ public class PostgresCandidateDataAdapter implements CandidateDataPort {
     public Optional<Candidate> findById(UUID id) {
         return jpaRepository.findById(id).map(CandidateMapper::toDomain);
     }
+
+    @Override
+    public void saveAllCandidates(List<Candidate> candidates) {
+        jpaRepository.saveAll(candidates.stream().map(CandidateMapper::toJpaEntity).toList());
+    }
 }

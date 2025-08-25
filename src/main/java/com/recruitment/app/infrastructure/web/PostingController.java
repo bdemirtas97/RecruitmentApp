@@ -6,16 +6,22 @@ import com.recruitment.app.domain.port.in.ApplicationUseCasePort;
 import com.recruitment.app.domain.port.in.CandidateUseCasePort;
 import com.recruitment.app.domain.port.in.EmployeeUseCasePort;
 import com.recruitment.app.domain.port.in.PostingUseCasePort;
+import com.recruitment.app.infrastructure.service.PostingImporterService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Controller
@@ -27,6 +33,7 @@ public class PostingController {
     private final EmployeeUseCasePort employeeUseCasePort;
     private final ApplicationUseCasePort applicationUseCasePort;
     private final CandidateUseCasePort candidateUseCasePort;
+    private final PostingImporterService postingImporterService;
 
     @GetMapping
     public String showPostingsList(Model model, Principal principal) {
@@ -106,5 +113,18 @@ public class PostingController {
     @GetMapping("/{postingId}/candidates/{candidateId}/match-analyze")
     public ResponseEntity<AnalyzeResponse> analyzeMatchForCandidate(@PathVariable("postingId") UUID postingId, @PathVariable("candidateId") UUID candidateId){
         return new ResponseEntity<>(new AnalyzeResponse(postingUseCasePort.fetchMatchAnalyzeForBestCandidate(postingId, candidateId)), HttpStatus.OK);
+    }
+
+    @PostMapping("/{id}/bulk-cv")
+    public ResponseEntity<?> uploadBulkCv(@PathVariable UUID id, @RequestParam("cvs") List<MultipartFile> cvs) throws IOException{
+        postingUseCasePort.uploadBulkResume(cvs, id);
+        String successMessage = "Successfully uploaded and processed %d CV(s).".formatted(cvs.size());
+        return new ResponseEntity<>(Map.of("message", successMessage), HttpStatus.OK);
+    }
+
+    @GetMapping("/posting-imports")
+    public ResponseEntity<?> importPostingFromLever(Principal principal){
+        postingUseCasePort.importPostings(principal.getName());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -5,30 +5,36 @@ import com.recruitment.app.domain.model.Application;
 import com.recruitment.app.domain.model.Candidate;
 import com.recruitment.app.domain.model.Employee;
 import com.recruitment.app.domain.model.Posting;
+import com.recruitment.app.domain.port.in.ApplicationUseCasePort;
 import com.recruitment.app.domain.port.in.PostingUseCasePort;
-import com.recruitment.app.domain.port.out.ApplicationDataPort;
-import com.recruitment.app.domain.port.out.CandidateDataPort;
-import com.recruitment.app.domain.port.out.EmployeeDataPort;
-import com.recruitment.app.domain.port.out.PostingDataPort;
-import com.recruitment.app.domain.service.RecruitmentAIClient;
+import com.recruitment.app.domain.port.out.*;
+import com.recruitment.app.infrastructure.service.PostingImportResult;
+import com.recruitment.app.infrastructure.service.PostingImporterService;
+import com.recruitment.app.infrastructure.service.RecruitmentAIClient;
 import com.recruitment.app.utils.PostingStringfier;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class PostingUseCaseService implements PostingUseCasePort {
-    private EmployeeDataPort employeeDataPort;
+    private final EmployeeDataPort employeeDataPort;
     private final PostingDataPort postingDataPort;
     private final ApplicationDataPort applicationDataPort;
     private final CandidateDataPort candidateDataPort;
     private final RecruitmentAIClient aiClient;
+    private final FileStoragePort fileStoragePort;
+    private final PasswordEncoder passwordEncoder;
+    private final ApplicationUseCasePort applicationUseCasePort;
+    private final PostingImporterService postingImporterService;
 
     @Override
     @Transactional
@@ -106,5 +112,51 @@ public class PostingUseCaseService implements PostingUseCasePort {
         Candidate candidate = candidateDataPort.findById(candidateId).orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + candidateId));
         MatchAnalyzeResponse response = aiClient.fetchAnalyzeResult(candidate.getParsedCv(), PostingStringfier.fieldsToString(posting));
         return response.getResult();
+    }
+
+    @Override
+    @Transactional
+    public void uploadBulkResume(List<MultipartFile> resumes, UUID postingId) throws IOException {
+        for(MultipartFile resume : resumes){
+            Candidate candidate = Candidate.builder()
+                    .id(UUID.randomUUID())
+                    .firstName("Harun")
+                    .lastName("Altı")
+                    .email("harun@harun.com")
+                    .contactPhone("5371231231")
+                    .contactEmail("harun@harun.com")
+                    .role("CANDIDATE")
+                    .passwordHash(passwordEncoder.encode("12345678"))
+                    .build();
+
+
+            String fileName = "%s_%s".formatted(UUID.randomUUID(), resume.getOriginalFilename());
+            String fileUrl = fileStoragePort.addResume(fileName, resume.getInputStream());
+
+            if(fileUrl != null){
+                ResumeParsingResponse parsingResponse = aiClient.fetchParsedResume(fileUrl);
+                candidate.updateResumeUrl(fileUrl);
+                candidate.setSkills(String.join(", ", parsingResponse.getSoft_skills()),
+                        String.join(", ", parsingResponse.getTech_skills()));
+                candidate.setEmbedding(parsingResponse.getParsed_cv_vector());
+                candidate.setParsedCv(parsingResponse.getParsed_cv_text());
+            }
+            candidateDataPort.addCandidate(candidate);
+            applicationUseCasePort.applyForPosting(candidate.getEmail(), postingId, "");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void importPostings(String email) {
+        Employee recruiter = employeeDataPort.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found: " + email));
+        PostingImportResult result = postingImporterService.fetchPostings();
+        for(Posting posting : result.getPostings()){
+            posting.setRecruiter(recruiter);
+            posting.setHiringManager(recruiter);
+            posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getPosting_vector());
+            postingDataPort.addPosting(posting);
+        }
     }
 }

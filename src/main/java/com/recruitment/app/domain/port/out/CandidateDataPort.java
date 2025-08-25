@@ -13,4 +13,5 @@ public interface CandidateDataPort {
     boolean existsByEmail(String email);
     List<CandidateSearchResult> findBestCandidatesByPostingId(UUID postingId);
     Optional<Candidate> findById(UUID id);
+    void saveAllCandidates(List<Candidate> candidates);
 }

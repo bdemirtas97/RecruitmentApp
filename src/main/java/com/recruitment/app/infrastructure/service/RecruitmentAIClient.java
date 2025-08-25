@@ -1,4 +1,4 @@
-package com.recruitment.app.domain.service;
+package com.recruitment.app.infrastructure.service;
 
 import com.recruitment.app.domain.dto.*;
 import lombok.RequiredArgsConstructor;
