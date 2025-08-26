@@ -56,6 +56,9 @@
                 <p th:if="${#fields.hasErrors('hiringManagerId')}" th:errors="*{hiringManagerId}" class="error-text"></p>
             </div>
             <hr>
+            <div th:if="${errorMessage}" th:text="${errorMessage}" class="error-message">
+                Default message text (will be replaced).
+            </div>
             <div>
                 <button type="submit">Save as Draft</button>
             </div>

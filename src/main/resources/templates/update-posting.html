@@ -291,6 +291,9 @@
                 <p th:if="${#fields.hasErrors('status')}" th:errors="*{status}" class="error-text"></p>
             </div>
             <hr>
+            <div th:if="${errorMessage}" th:text="${errorMessage}" class="error-message">
+                Default message text (will be replaced).
+            </div>
             <div>
                 <button type="submit">Update Posting</button>
             </div>

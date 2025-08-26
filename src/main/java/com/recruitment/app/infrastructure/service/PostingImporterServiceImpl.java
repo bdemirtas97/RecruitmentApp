@@ -1,13 +1,11 @@
 package com.recruitment.app.infrastructure.service;
 
-import com.recruitment.app.domain.model.Employee;
 import com.recruitment.app.domain.model.Posting;
 import com.recruitment.app.utils.CareerFieldMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;

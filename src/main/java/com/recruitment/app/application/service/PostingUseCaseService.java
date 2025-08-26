@@ -1,5 +1,8 @@
 package com.recruitment.app.application.service;
 
+import com.recruitment.app.aop.exceptionhandling.AIServiceMatchAnalyzeException;
+import com.recruitment.app.aop.exceptionhandling.AIServicePostingCreationException;
+import com.recruitment.app.aop.exceptionhandling.AIServicePostingUpdateException;
 import com.recruitment.app.domain.dto.*;
 import com.recruitment.app.domain.model.Application;
 import com.recruitment.app.domain.model.Candidate;
@@ -18,7 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -59,12 +62,12 @@ public class PostingUseCaseService implements PostingUseCasePort {
                 .hiringManager(hiringManager)
                 .build();
 
-        //try {
+        try {
             posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getPosting_vector());
-        //}
-        //catch (WebClientResponseException ex){
-        //    throw AIServicePostingException
-        //}
+        }
+        catch (WebClientResponseException ex){
+            throw new AIServicePostingCreationException("Error while posting creation: AI service not responding", ex.getMessage(), ex.getResponseBodyAsString(), request);
+        }
 
         postingDataPort.addPosting(posting);
     }
@@ -88,7 +91,11 @@ public class PostingUseCaseService implements PostingUseCasePort {
         Posting posting = postingDataPort.findById(postingId)
                 .orElseThrow(() -> new EntityNotFoundException("Posting not found: " + postingId));
         posting.updatePosting(request);
-        posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getPosting_vector());
+        try {
+            posting.setEmbedding(aiClient.fetchPostingVector(PostingStringfier.fieldsToString(posting)).getPosting_vector());
+        } catch (WebClientResponseException ex) {
+            throw new AIServicePostingUpdateException("Error while posting update: AI service not responding", ex.getMessage(), ex.getResponseBodyAsString(), request, postingId);
+        }
         postingDataPort.addPosting(posting);
     }
 
@@ -99,19 +106,31 @@ public class PostingUseCaseService implements PostingUseCasePort {
 
     @Override
     public String fetchMatchAnalyzeForPosting(UUID applicationId) {
-        Application application = applicationDataPort.findById(applicationId).orElseThrow(() -> new EntityNotFoundException("Application not found: " + applicationId));
-        Posting posting = postingDataPort.findById(application.getPosting().getId()).orElseThrow(() -> new EntityNotFoundException("Posting not found: " + application.getPosting().getId()));
-        Candidate candidate = candidateDataPort.findById(application.getCandidate().getId()).orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + application.getCandidate().getId()));
-        MatchAnalyzeResponse response = aiClient.fetchAnalyzeResult(candidate.getParsedCv(), PostingStringfier.fieldsToString(posting));
-        return response.getResult();
+        Application application = applicationDataPort.findById(applicationId)
+                .orElseThrow(() -> new EntityNotFoundException("Application not found: " + applicationId));
+        Posting posting = postingDataPort.findById(application.getPosting().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Posting not found: " + application.getPosting().getId()));
+        Candidate candidate = candidateDataPort.findById(application.getCandidate().getId())
+                .orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + application.getCandidate().getId()));
+
+        try {
+            MatchAnalyzeResponse response = aiClient.fetchAnalyzeResult(candidate.getParsedCv(), PostingStringfier.fieldsToString(posting));
+            return response.getResult();
+        } catch (WebClientResponseException ex) {
+            throw new AIServiceMatchAnalyzeException(ex.getMessage(), ex.getResponseBodyAsString(), ex.getStatusCode());
+        }
     }
 
     @Override
     public String fetchMatchAnalyzeForBestCandidate(UUID postingId, UUID candidateId) {
         Posting posting = postingDataPort.findById(postingId).orElseThrow(() -> new EntityNotFoundException("Posting not found: " + postingId));
         Candidate candidate = candidateDataPort.findById(candidateId).orElseThrow(() -> new EntityNotFoundException("Candidate not found: " + candidateId));
-        MatchAnalyzeResponse response = aiClient.fetchAnalyzeResult(candidate.getParsedCv(), PostingStringfier.fieldsToString(posting));
-        return response.getResult();
+        try {
+            MatchAnalyzeResponse response = aiClient.fetchAnalyzeResult(candidate.getParsedCv(), PostingStringfier.fieldsToString(posting));
+            return response.getResult();
+        } catch (WebClientResponseException ex) {
+            throw new AIServiceMatchAnalyzeException(ex.getMessage(), ex.getResponseBodyAsString(), ex.getStatusCode());
+        }
     }
 
     @Override
@@ -126,7 +145,7 @@ public class PostingUseCaseService implements PostingUseCasePort {
                     .contactPhone("5371231231")
                     .contactEmail("harun@harun.com")
                     .role("CANDIDATE")
-                    .passwordHash(passwordEncoder.encode("12345678"))
+                    .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
                     .build();
 
 

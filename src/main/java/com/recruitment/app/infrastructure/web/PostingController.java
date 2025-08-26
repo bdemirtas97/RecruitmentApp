@@ -116,9 +116,9 @@ public class PostingController {
     }
 
     @PostMapping("/{id}/bulk-cv")
-    public ResponseEntity<?> uploadBulkCv(@PathVariable UUID id, @RequestParam("cvs") List<MultipartFile> cvs) throws IOException{
-        postingUseCasePort.uploadBulkResume(cvs, id);
-        String successMessage = "Successfully uploaded and processed %d CV(s).".formatted(cvs.size());
+    public ResponseEntity<?> uploadBulkCv(@PathVariable UUID id, @RequestParam("cvs") List<MultipartFile> resumes) throws IOException{
+        postingUseCasePort.uploadBulkResume(resumes, id);
+        String successMessage = "Successfully uploaded and processed %d CV(s).".formatted(resumes.size());
         return new ResponseEntity<>(Map.of("message", successMessage), HttpStatus.OK);
     }
 

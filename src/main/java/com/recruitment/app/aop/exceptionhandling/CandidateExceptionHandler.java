@@ -1,20 +1,22 @@
 package com.recruitment.app.aop.exceptionhandling;
 
-import com.recruitment.app.application.service.CandidateUseCaseService;
+import com.recruitment.app.domain.port.in.CandidateUseCasePort;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.security.Principal;
 
 @ControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RequiredArgsConstructor
 public class CandidateExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(CandidateExceptionHandler.class);
-    private final CandidateUseCaseService candidateUseCaseService;
-
+    private final CandidateUseCasePort candidateUseCaseService;
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public String handleSignupException(UserAlreadyExistsException ex, Model model) {
