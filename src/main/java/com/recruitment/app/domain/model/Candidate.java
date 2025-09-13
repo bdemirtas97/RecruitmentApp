@@ -1,6 +1,7 @@
 package com.recruitment.app.domain.model;
 
 import com.recruitment.app.domain.dto.CandidateProfileUpdate;
+import jakarta.persistence.Column;
 import lombok.*;
 import java.util.UUID;
 
@@ -22,16 +23,16 @@ public class Candidate {
     private String techSkills;
     private String parsedCv;
     private float[] embedding;
+    private String resumeCareerField;
+    private String resumeDepartment;
+    private String applicationCareerFields;
+    private String applicationDepartments;
 
     public void updateProfile(CandidateProfileUpdate request) {
         this.firstName = request.getFirstName();
         this.lastName = request.getLastName();
         this.contactEmail = request.getContactEmail();
         this.contactPhone = request.getContactPhone();
-    }
-
-    public void updateResumeUrl(String newUrl){
-        this.fileUrl = newUrl;
     }
 
     public void setSkills(String softSkills, String techSkills){

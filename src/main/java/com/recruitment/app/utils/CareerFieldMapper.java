@@ -1,6 +1,7 @@
 package com.recruitment.app.utils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CareerFieldMapper {
@@ -23,5 +24,9 @@ public class CareerFieldMapper {
 
     public static String getValue(String key){
         return mappings.get(key);
+    }
+
+    public static List<String> getAllFields(){
+        return mappings.keySet().stream().sorted(String::compareToIgnoreCase).toList();
     }
 }

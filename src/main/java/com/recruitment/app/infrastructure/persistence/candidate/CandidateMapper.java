@@ -19,6 +19,10 @@ public class CandidateMapper {
         entity.setTechSkills(domain.getTechSkills());
         entity.setParsedCv(domain.getParsedCv());
         entity.setEmbedding(domain.getEmbedding());
+        entity.setResumeCareerField(domain.getResumeCareerField());
+        entity.setResumeDepartment(domain.getResumeDepartment());
+        entity.setApplicationCareerFields(domain.getApplicationCareerFields());
+        entity.setApplicationDepartments(domain.getApplicationDepartments());
         return entity;
     }
 
@@ -37,6 +41,10 @@ public class CandidateMapper {
                 .techSkills(entity.getTechSkills())
                 .parsedCv(entity.getParsedCv())
                 .embedding(entity.getEmbedding())
+                .resumeCareerField(entity.getResumeCareerField())
+                .resumeDepartment(entity.getResumeDepartment())
+                .applicationCareerFields(entity.getApplicationCareerFields())
+                .applicationDepartments(entity.getApplicationDepartments())
                 .build();
     }
 }

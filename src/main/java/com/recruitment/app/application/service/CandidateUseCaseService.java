@@ -8,6 +8,7 @@ import com.recruitment.app.domain.port.in.CandidateUseCasePort;
 import com.recruitment.app.domain.port.out.CandidateDataPort;
 import com.recruitment.app.domain.port.out.FileStoragePort;
 import com.recruitment.app.infrastructure.service.RecruitmentAIClient;
+import com.recruitment.app.utils.UUIDv5;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,7 +38,7 @@ public class CandidateUseCaseService implements CandidateUseCasePort {
 
         String hashedPassword = passwordEncoder.encode(request.getPassword());
         Candidate candidate = Candidate.builder()
-                .id(UUID.randomUUID())
+                .id(UUIDv5.fromEmailOrPhone(request.getEmail(), "unknown"))
                 .email(request.getEmail())
                 .passwordHash(hashedPassword)
                 .firstName(request.getFirstName())
@@ -66,12 +67,16 @@ public class CandidateUseCaseService implements CandidateUseCasePort {
         if(fileUrl != null){
             try{
                 ResumeParsingResponse parsingResponse = aiClient.fetchParsedResume(fileUrl);
-                candidate.updateResumeUrl(fileUrl);
+                candidate.setFileUrl(fileUrl);
                 candidate.updateProfile(request);
                 candidate.setSkills(String.join(", ", parsingResponse.getSoft_skills()),
                         String.join(", ", parsingResponse.getTech_skills()));
                 candidate.setEmbedding(parsingResponse.getParsed_cv_vector());
                 candidate.setParsedCv(parsingResponse.getParsed_cv_text());
+                candidate.setResumeCareerField(parsingResponse.getCv_info().getCareer_field());
+                candidate.setResumeDepartment(parsingResponse.getCv_info().getDepartment());
+                candidate.setApplicationCareerFields("None");
+                candidate.setApplicationDepartments("None");
             }
             catch(WebClientResponseException ex){
                 throw new AIServiceResumeException("Resume file couldn't be analyzed!", ex.getMessage(), ex.getResponseBodyAsString(), request);

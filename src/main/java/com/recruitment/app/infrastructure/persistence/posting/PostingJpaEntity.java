@@ -32,7 +32,7 @@ public class PostingJpaEntity {
     @Column(nullable=false)
     private String workingType;
 
-    @Column(nullable=false, length=10000)
+    @Column(nullable=false, length=100000)
     private String details;
 
     @Column(nullable=false)

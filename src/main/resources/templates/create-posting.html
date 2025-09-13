@@ -45,6 +45,17 @@
                 <input type="text" id="keywords" th:field="*{keywords}" required/>
             </div>
             <div>
+                <label for="careerField">Career Field:</label>
+                <select id="careerField" th:field="*{careerField}" required>
+                    <option value="">Select a Career Field...</option>
+                    <option th:each="careerField : ${careerFields}"
+                            th:value="${careerField}"
+                            th:text="${careerField}">
+                    </option>
+                </select>
+                <p th:if="${#fields.hasErrors('careerField')}" th:errors="*{careerField}" class="error-text"></p>
+            </div>
+            <div>
                 <label for="hiringManagerId">Assign Hiring Manager:</label>
                 <select id="hiringManagerId" th:field="*{hiringManagerId}" required>
                     <option value="">Select a Hiring Manager...</option>

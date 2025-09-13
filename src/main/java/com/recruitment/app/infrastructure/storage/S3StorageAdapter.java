@@ -18,7 +18,7 @@ import java.net.URL;
 @Repository
 public class S3StorageAdapter implements FileStoragePort {
     private final S3Client s3Client;
-    @Value("${aws.s3.bucket-name}")
+    @Value("${AWS_S3_BUCKET_NAME}")
     private String bucketName;
 
     public S3StorageAdapter(S3Client s3Client){

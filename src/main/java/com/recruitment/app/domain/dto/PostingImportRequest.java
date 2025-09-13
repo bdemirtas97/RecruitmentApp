@@ -3,6 +3,6 @@ package com.recruitment.app.domain.dto;
 import lombok.Value;
 
 @Value
-public class PostingVectorRequest {
-    String posting_string;
+public class PostingImportRequest {
+    String importLink;
 }

@@ -25,7 +25,8 @@ interface SpringDataCandidateRepository extends JpaRepository<CandidateJpaEntity
         c.fileurl as "resumeUrl",
         to_char((1 - (p.embedding <=> c.embedding)) * 100, '00.00') AS score
     FROM candidates c, postings p
-    WHERE p.id = :postingId
+    WHERE p.id = :postingId AND
+    (c.applicationdepartments ILIKE '%' || p.department || '%' OR c.resumedepartment ILIKE '%' || p.department || '%')
     ORDER BY score DESC
     """, nativeQuery = true)
     List<CandidateSearchResult> findBestCandidatesByPostingId(@Param("postingId") UUID postingId);
@@ -62,10 +63,5 @@ public class PostgresCandidateDataAdapter implements CandidateDataPort {
     @Override
     public Optional<Candidate> findById(UUID id) {
         return jpaRepository.findById(id).map(CandidateMapper::toDomain);
-    }
-
-    @Override
-    public void saveAllCandidates(List<Candidate> candidates) {
-        jpaRepository.saveAll(candidates.stream().map(CandidateMapper::toJpaEntity).toList());
     }
 }

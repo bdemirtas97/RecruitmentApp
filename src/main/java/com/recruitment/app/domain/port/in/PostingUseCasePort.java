@@ -21,4 +21,5 @@ public interface PostingUseCasePort {
     String fetchMatchAnalyzeForBestCandidate(UUID postingId, UUID candidateId);
     void uploadBulkResume(List<MultipartFile> resumes, UUID postingId) throws IOException;
     void importPostings(String email);
+    void importPosting(String email, String url);
 }

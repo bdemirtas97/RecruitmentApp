@@ -64,61 +64,71 @@ public class PostingImporterServiceImpl implements PostingImporterService{
         return result;
     }
 
+    @Override
+    public Posting fetchPosting(String url) {
+        return processJob(url);
+    }
+
     private Posting processJob(String jobUrl){
         Posting posting = new Posting();
-        try {
-            Document jobPage = Jsoup.connect(jobUrl)
-                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
-                    .timeout(REQUEST_TIMEOUT)
-                    .get();
+        for(int i = 1; i < 4; i++){
+            try {
+                Document jobPage = Jsoup.connect(jobUrl)
+                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36")
+                        .timeout(REQUEST_TIMEOUT)
+                        .get();
 
 
+                String[] splitUrl = jobUrl.split("/");
+                UUID id = UUID.fromString(splitUrl[splitUrl.length - 1]);
+                posting.setId(id);
 
-            String[] splitUrl = jobUrl.split("/");
-            UUID id = UUID.fromString(splitUrl[splitUrl.length - 1]);
-            posting.setId(id);
+                Elements postingCategories = jobPage.select("div.posting-categories");
 
-            Elements postingCategories = jobPage.select("div.posting-categories");
+                String careerField = postingCategories.select(".department").text();
+                careerField = careerField.substring(0, careerField.length() - 2);
+                posting.setCareerField(careerField);
+                posting.setDepartment(CareerFieldMapper.getValue(careerField));
 
-            String careerField = postingCategories.select(".department").text();
-            careerField = careerField.substring(0, careerField.length() - 2);
-            posting.setCareerField(careerField);
-            posting.setDepartment(CareerFieldMapper.getValue(careerField));
+                Optional.ofNullable(jobPage.selectFirst("div.posting-headline > h2"))
+                        .map(Element::text)
+                        .ifPresentOrElse(posting::setTitle, () -> posting.setTitle("Unknown"));
+                Optional.ofNullable(postingCategories.selectFirst(".location"))
+                        .map(Element::text)
+                        .ifPresentOrElse(posting::setLocation, () -> posting.setLocation("Unknown"));
+                Optional.ofNullable(postingCategories.selectFirst(".commitment"))
+                        .map(Element::text)
+                        .ifPresentOrElse(posting::setWorkingType, () -> posting.setWorkingType("Unknown"));
+                Optional.ofNullable(postingCategories.selectFirst(".workplaceTypes"))
+                        .map(Element::text)
+                        .ifPresentOrElse(posting::setWorkPlace, () -> posting.setWorkPlace("Unknown"));
+                posting.setStatus("ACTIVE");
 
-            Optional.ofNullable(jobPage.selectFirst("div.posting-headline > h2"))
-                            .map(Element::text)
-                            .ifPresentOrElse(posting::setTitle, () -> posting.setTitle("Unknown"));
-            Optional.ofNullable(postingCategories.selectFirst(".location"))
-                    .map(Element::text)
-                    .ifPresentOrElse(posting::setLocation, () -> posting.setLocation("Unknown"));
-            Optional.ofNullable(postingCategories.selectFirst(".commitment"))
-                    .map(Element::text)
-                    .ifPresentOrElse(posting::setWorkingType, () -> posting.setWorkingType("Unknown"));
-            Optional.ofNullable(postingCategories.selectFirst(".workplaceTypes"))
-                    .map(Element::text)
-                    .ifPresentOrElse(posting::setWorkPlace, () -> posting.setWorkPlace("Unknown"));
-            posting.setStatus("ACTIVE");
+                Elements sections = jobPage.select("div.section-wrapper.page-full-width").get(2).select("div.section.page-centered:not([data-qa])").stream().
+                        limit(2).collect(Collectors.toCollection(Elements::new));
 
-            Elements sections = jobPage.select("div.section-wrapper.page-full-width").get(2).select("div.section.page-centered:not([data-qa])").stream().
-                    limit(2).collect(Collectors.toCollection(Elements::new));
-
-            StringBuilder sb = new StringBuilder();
-            for (Element section : sections) {
-                sb.append(section.select("h3").text()).append("\n");
+                StringBuilder sb = new StringBuilder();
+                for (Element section : sections) {
+                    sb.append(section.select("h3").text()).append("\n");
                     Elements listItems = section.selectFirst("ul.posting-requirements.plain-list > ul").children();
-                        for (Element item : listItems) {
-                            String nodeText = item.text();
-                            sb.append("• %s".formatted(nodeText)).append("\n");
+                    for (Element item : listItems) {
+                        String nodeText = item.text();
+                        sb.append("• %s".formatted(nodeText)).append("\n");
+                    }
                 }
-            }
 
-            posting.setDetails(sb.toString());
-            posting.setLevel("Unknown");
-            posting.setKeywords("None");
-            return posting;
-        } catch (Exception ignored) {
-            System.err.println("timeout");
+                posting.setDetails(sb.toString());
+                posting.setLevel("Unknown");
+                posting.setKeywords("None");
+                return posting;
+            } catch (Exception e) {
+                System.err.printf("Attempt %d failed for %s: %s%n", i, jobUrl, e.getMessage());
+                try {
+                    Thread.sleep(1000 * i);
+                } catch (InterruptedException ignored) {}
+            }
         }
+
         return null;
     }
 }

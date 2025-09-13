@@ -36,14 +36,22 @@ public class CandidateJpaEntity {
 
     private String fileUrl;
 
-    @Column(length=5000)
+    @Column(length=10000)
     private String softSkills;
 
     @Column(length=10000)
     private String techSkills;
 
-    @Column(length=10000)
+    @Column(length=100000)
     private String parsedCv;
+
+    private String resumeCareerField;
+
+    private String resumeDepartment;
+
+    private String applicationCareerFields;
+
+    private String applicationDepartments;
 
     @Column(name = "embedding", columnDefinition = "vector(768)")
     @Type(VectorType.class)

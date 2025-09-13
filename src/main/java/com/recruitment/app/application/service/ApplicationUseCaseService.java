@@ -39,6 +39,23 @@ public class ApplicationUseCaseService implements ApplicationUseCasePort {
 
         String score = applicationDataPort.calculateSimilarityScore(candidate.getId(), postingId);
 
+        String candidateApplicationDepartments = candidate.getApplicationDepartments();
+        String candidateApplicationCareerFields = candidate.getApplicationCareerFields();
+        String postingCareerField = posting.getCareerField();;
+        String postingDepartment = posting.getDepartment();
+
+        if(candidateApplicationDepartments.equals("None")){
+            candidate.setApplicationCareerFields(postingCareerField);
+            candidate.setApplicationDepartments(postingDepartment);
+        }else{
+            if(!candidateApplicationDepartments.contains(postingDepartment)){
+                candidate.setApplicationCareerFields(candidateApplicationCareerFields.concat(", %s".formatted(postingCareerField)));
+                candidate.setApplicationDepartments(candidateApplicationDepartments.concat(", %s".formatted(postingDepartment)));
+            }
+        }
+
+        candidateDataPort.addCandidate(candidate);
+
         Application application = Application.builder()
                 .id(UUID.randomUUID())
                 .candidate(candidate)

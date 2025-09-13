@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -47,5 +49,11 @@ public class PostgresPostingDataAdapter implements PostingDataPort {
     @Override
     public List<Posting> findAllByStatus(String status) {
         return jpaRepository.findAllByStatus(status).stream().map(PostingMapper::toDomain).toList();
+    }
+
+    @Override
+    public void addAll(Collection<Posting> postings) {
+        List<PostingJpaEntity> entities = postings.stream().map(PostingMapper::toJpaEntity).toList();
+        jpaRepository.saveAll(entities);
     }
 }

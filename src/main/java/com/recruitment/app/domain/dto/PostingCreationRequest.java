@@ -16,4 +16,6 @@ public class PostingCreationRequest {
     @NotNull(message = "You must select a hiring manager")
     private UUID hiringManagerId;
     @NotBlank private String keywords;
+    @NotNull(message = "You must select a hiring manager")
+    private String careerField;
 }

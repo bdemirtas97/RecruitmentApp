@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: common_head(pageTitle='Manage Job Postings')}"></head>
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 <script>
     function importPostings() {
         const resultDiv = document.getElementById("result");
@@ -20,12 +22,63 @@
         })
             .then(() => {
                     showResult(resultDiv, 'Postings imported succesfully.', 'info');
+                    setTimeout(() => window.location.reload(), 2000);
             })
             .catch(error => {
                 console.error('Error:', error);
                 showResult(resultDiv, 'An error occurred during importing.', 'error');
             });
     }
+    function importPosting() {
+        const inputField = document.getElementById("importData");
+        const inputValue = inputField.value.trim();
+        const resultDiv = document.getElementById("result");
+
+        if (!inputValue) {
+            showResult(resultDiv, 'Please enter data to import.', 'error');
+            return;
+        }
+
+        showLoading(resultDiv, 'Importing posting...');
+
+        const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+        const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+
+        fetch(`/postings/posting-import`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                [header]: token
+            },
+            body: JSON.stringify({ importLink: inputValue })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+            }
+            return response.json();
+        })
+            .then(() => {
+                showResult(resultDiv, 'Posting imported successfully.', 'info');
+                inputField.value = '';
+                setTimeout(() => window.location.reload(), 2000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showResult(resultDiv, `An error occurred during importing: ${error.message}`, 'error');
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputField = document.getElementById('importData');
+        if (inputField) {
+            inputField.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    importPosting();
+                }
+            });
+        }
+    });
     function showLoading(element, message) {
         element.style.display = 'block';
         element.className = 'application-result loading';
@@ -89,6 +142,23 @@
                         onclick="importPostings()"
                         style="background-color: var(--success-color); margin-left: 0.5rem;">
                     Import Postings from Lever
+                </button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label for="importData" style="font-weight: 500; margin-right: 0.25rem;">
+                    Import Data:
+                </label>
+                <input type="text"
+                       id="importData"
+                       placeholder="Enter link..."
+                       class="form-input"
+                       style="padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; min-width: 200px;">
+
+                <button type="button"
+                        class="button"
+                        onclick="importPosting()"
+                        style="background-color: var(--success-color);">
+                    Import Posting
                 </button>
             </div>
 

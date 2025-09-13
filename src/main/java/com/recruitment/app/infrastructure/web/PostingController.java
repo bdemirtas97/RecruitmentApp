@@ -6,7 +6,9 @@ import com.recruitment.app.domain.port.in.ApplicationUseCasePort;
 import com.recruitment.app.domain.port.in.CandidateUseCasePort;
 import com.recruitment.app.domain.port.in.EmployeeUseCasePort;
 import com.recruitment.app.domain.port.in.PostingUseCasePort;
+import com.recruitment.app.infrastructure.service.PostingImportResult;
 import com.recruitment.app.infrastructure.service.PostingImporterService;
+import com.recruitment.app.utils.CareerFieldMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +35,6 @@ public class PostingController {
     private final EmployeeUseCasePort employeeUseCasePort;
     private final ApplicationUseCasePort applicationUseCasePort;
     private final CandidateUseCasePort candidateUseCasePort;
-    private final PostingImporterService postingImporterService;
 
     @GetMapping
     public String showPostingsList(Model model, Principal principal) {
@@ -45,8 +46,10 @@ public class PostingController {
     @GetMapping("/new")
     public String showCreatePostingForm(Model model) {
         List<HiringManagerDto> hiringManagers = employeeUseCasePort.findHiringManagers();
+        List<String> careerFields = CareerFieldMapper.getAllFields();
         model.addAttribute("createPostingRequest", new PostingCreationRequest());
         model.addAttribute("hiringManagers", hiringManagers);
+        model.addAttribute("careerFields", careerFields);
         return "create-posting";
     }
 
@@ -59,6 +62,8 @@ public class PostingController {
         if (bindingResult.hasErrors()) {
             List<HiringManagerDto> hiringManagers = employeeUseCasePort.findHiringManagers();
             model.addAttribute("hiringManagers", hiringManagers);
+            List<String> careerFields = CareerFieldMapper.getAllFields();
+            model.addAttribute("careerFields", careerFields);
             return "create-posting";
         }
 
@@ -123,8 +128,14 @@ public class PostingController {
     }
 
     @GetMapping("/posting-imports")
-    public ResponseEntity<?> importPostingFromLever(Principal principal){
+    public ResponseEntity<?> importPostingsFromLever(Principal principal){
         postingUseCasePort.importPostings(principal.getName());
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(Map.of("status", "SUCCESS") ,HttpStatus.OK);
+    }
+
+    @PostMapping("/posting-import")
+    public ResponseEntity<?> importPostingFromLever(@RequestBody PostingImportRequest request, Principal principal){
+        postingUseCasePort.importPosting(principal.getName(), request.getImportLink());
+        return new ResponseEntity<>(Map.of("status", "SUCCESS") ,HttpStatus.OK);
     }
 }
